@@ -17,4 +17,14 @@
         "**/env": true,
     },
     "python.languageServer": "Pylance",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./source",
+        "-p",
+        "Test*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.unittestEnabled": true,
 }
