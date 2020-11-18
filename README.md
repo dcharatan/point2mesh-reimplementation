@@ -6,6 +6,10 @@
 
 To create a virtual environment, run `python3 -m venv venv`. Then, do `source venv/bin/activate` (or equivalent) and `pip3 install -r requirements.txt` to install the project's dependencies.
 
+### Installing OpenEXR
+
+Specifically there seems to be some sort of issues with some Windows machines installing OpenEXR (a critical component of tensorflow-graphics) through `pip3 install OpenEXR` or `pip3 install tensorflow-graphics`. Instead, the best option I found is downloading a precompiled wheel file from `https://www.lfd.uci.edu/~gohlke/pythonlibs/`, moving it to the workspace folder, then running `python -m pip install SomePackage-1.0-py2.py3-none-any.whl`. Then `pip3 install tensorflow-graphics` should work as you have already installed OpenEXR.
+
 ### Running Scripts
 
 The scripts in `script_modules` can be run as Python modules. To run `create_convex_hull.py`, run the command `python3 -m source.script_modules.create_convex_hull` from the project's root directory. Several VS Code run configurations are included in `.vscode/launch.json`.
