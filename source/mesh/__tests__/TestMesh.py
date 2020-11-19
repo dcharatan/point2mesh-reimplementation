@@ -2,6 +2,7 @@ import unittest
 import trimesh
 import numpy as np
 from typing import Tuple
+from .MeshChecker import MeshChecker
 from ..Mesh import Mesh
 
 
@@ -36,17 +37,5 @@ class TestMesh(unittest.TestCase):
     def test_icosahedron_lookup(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
         mesh = Mesh(vertices, faces)
-
-        # If you don't understand how the edge_lookup array works, read through this test carefully.
-        for edge_index in range(mesh.edges.shape[0]):
-            # Get the neighboring edges' keys (indices).
-            neighbors = mesh.edge_to_neighbors[edge_index, :]
-
-            # Get this edge's lookup table (4 entries).
-            lookup = mesh.edge_lookup[edge_index, :]
-
-            # Check that each neighbor's nth neighbor is the original edge, where n = lookup[neighbor index].
-            for neighbor_index, neighbor in enumerate(neighbors):
-                self.assertEqual(
-                    edge_index, mesh.edge_to_neighbors[neighbor, lookup[neighbor_index]]
-                )
+        checker = MeshChecker(mesh)
+        self.assertTrue(checker.check_lookup_validity())
