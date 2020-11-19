@@ -27,4 +27,5 @@
     "python.testing.pytestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": true,
+    "editor.rulers": [80],
 }

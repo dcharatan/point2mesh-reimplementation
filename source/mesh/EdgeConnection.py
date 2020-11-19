@@ -12,3 +12,11 @@ class EdgeConnection:
         assert index_in_edge == 0 or index_in_edge == 1
         self.edge_index = edge_index
         self.index_in_edge = index_in_edge
+
+    def __hash__(self) -> int:
+        return (self.edge_index, self.index_in_edge).__hash__()
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, EdgeConnection):
+            return False
+        return self.edge_index == o.edge_index and self.index_in_edge == o.index_in_edge

@@ -1,6 +1,6 @@
 import numpy as np
 from .EdgeConnection import EdgeConnection
-from typing import Dict, List
+from typing import Optional, List, Set
 
 
 class Mesh:
@@ -24,7 +24,13 @@ class Mesh:
     edge_lookup: np.ndarray
 
     # Map vertex indices to lists of edge indices.
-    vertex_to_edges: Dict[int, List[EdgeConnection]]
+    vertex_to_edges: List[Optional[Set[EdgeConnection]]]
+
+    # This indicates whether an edge is still part of the mesh.
+    edge_mask: np.ndarray
+
+    # This indicates whether a vertex is still part of the mesh.
+    vertex_mask: np.ndarray
 
     def __init__(self, vertices: np.ndarray, faces: np.ndarray) -> None:
         """Create a new mesh.
@@ -39,10 +45,12 @@ class Mesh:
         self.vertices = vertices
         self.faces = faces
         self.build_acceleration_structures()
+        self.edge_mask = np.ones((self.edges.shape[0]), dtype=np.bool)
+        self.vertex_mask = np.ones((self.vertices.shape[0]), dtype=np.bool)
 
     def build_acceleration_structures(self):
         # Map vertex indices
-        self.vertex_to_edges = [[] for _ in range(self.vertices.shape[0])]
+        self.vertex_to_edges = [set() for _ in range(self.vertices.shape[0])]
 
         # Each edge has a unique key.
         # These map between (smaller vertex index, larger vertex index) and an edge's unique key.
@@ -82,8 +90,8 @@ class Mesh:
 
                     # Associate each vertex with the edge.
                     v0, v1 = edge_vertices
-                    self.vertex_to_edges[v0].append(EdgeConnection(edge_key, 0))
-                    self.vertex_to_edges[v1].append(EdgeConnection(edge_key, 1))
+                    self.vertex_to_edges[v0].add(EdgeConnection(edge_key, 0))
+                    self.vertex_to_edges[v1].add(EdgeConnection(edge_key, 1))
 
             # Associate edges with their neighbors.
             # This happens in a separate loop because it requires all encountered edges to have keys.
