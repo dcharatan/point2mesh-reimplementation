@@ -1,4 +1,4 @@
-from ..Mesh import Mesh
+from .Mesh import Mesh
 
 
 class MeshChecker:

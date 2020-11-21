@@ -1,5 +1,5 @@
-from .Mesh import Mesh
-from .EdgeConnection import EdgeConnection
+from ...mesh.Mesh import Mesh
+from ...mesh.EdgeConnection import EdgeConnection
 
 
 def collapse_edge(mesh: Mesh, edge_key: int):

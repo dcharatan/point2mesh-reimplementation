@@ -2,8 +2,8 @@ import unittest
 import trimesh
 import numpy as np
 from typing import Tuple
-from .MeshChecker import MeshChecker
-from ..Mesh import Mesh
+from ....mesh.MeshChecker import MeshChecker
+from ....mesh.Mesh import Mesh
 from ..collapse_edge import check_collapse_manifold, collapse_edge
 
 
