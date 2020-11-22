@@ -32,6 +32,9 @@ class Mesh:
     # This indicates whether a vertex is still part of the mesh.
     vertex_mask: np.ndarray
 
+    # The number of non-masked edges in the mesh.
+    num_edges: int
+
     def __init__(self, vertices: np.ndarray, faces: np.ndarray) -> None:
         """Create a new mesh.
 
@@ -47,6 +50,7 @@ class Mesh:
         self.build_acceleration_structures()
         self.edge_mask = np.ones((self.edges.shape[0]), dtype=np.bool)
         self.vertex_mask = np.ones((self.vertices.shape[0]), dtype=np.bool)
+        self.num_edges = self.edges.shape[0]
 
     def build_acceleration_structures(self):
         # Map vertex indices

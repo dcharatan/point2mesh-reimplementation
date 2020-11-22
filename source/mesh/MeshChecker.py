@@ -136,8 +136,13 @@ class MeshChecker:
     def _check_edge_mask(self) -> bool:
         """Check the validity of the mesh's edge_mask field."""
 
+        # Check the shape.
         num_edges = self.mesh.edges.shape[0]
         if self.mesh.edge_mask.shape != (num_edges,):
+            return False
+
+        # Check that the edge mask agrees with num_edges.
+        if self.mesh.num_edges != np.sum(self.mesh.edge_mask):
             return False
 
         return True

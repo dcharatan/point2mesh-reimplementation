@@ -50,6 +50,9 @@ def collapse_edge(mesh: Mesh, edge_key: int):
     mesh.vertex_to_edges[kept_vertex].update(masked_vertex_edges)
     mesh.vertex_to_edges[masked_vertex] = None
 
+    # Update the mesh's num_edges.
+    mesh.num_edges -= 3
+
     # TODO: Update faces?
 
     return True
