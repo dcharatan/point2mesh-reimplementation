@@ -2,8 +2,8 @@ import unittest
 import trimesh
 import numpy as np
 from typing import Tuple
-from ....mesh.MeshChecker import MeshChecker
-from ....mesh.Mesh import Mesh
+from ..MeshChecker import MeshChecker
+from ..Mesh import Mesh
 
 
 class TestMesh(unittest.TestCase):
@@ -36,6 +36,12 @@ class TestMesh(unittest.TestCase):
 
     def test_icosahedron_validity(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
+        mesh = Mesh(vertices, faces)
+        checker = MeshChecker(mesh)
+        self.assertTrue(checker.check_validity())
+
+    def test_tetrahedron_validity(self):
+        vertices, faces = self.load_obj("data/objs/tetrahedron.obj")
         mesh = Mesh(vertices, faces)
         checker = MeshChecker(mesh)
         self.assertTrue(checker.check_validity())
