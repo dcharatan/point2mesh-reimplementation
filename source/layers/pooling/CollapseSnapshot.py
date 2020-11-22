@@ -47,3 +47,10 @@ class CollapseSnapshot:
         """Reparent the child edge and its children to the parent edge."""
         self.relationships[parent_edge_key, :] += self.relationships[child_edge_key, :]
         self.relationships[child_edge_key, :] = 0
+
+    def extract_relationships(self):
+        """Once a number of edges have been reparented, relationships will be a
+        square matrix with several zero rows. This returns relationships with
+        its zero rows removed.
+        """
+        return self.relationships[np.sum(self.relationships, axis=1) != 0]
