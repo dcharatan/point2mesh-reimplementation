@@ -21,7 +21,7 @@ class Mesh:
     # Let k be an edge's key. Let k'_n be the nth value of edge_to_neighbors[k].
     # Then the nth element of edge_lookup[k] will be the index of k within edge_to_neighbors[k'_n].
     # This is used for MeshCNN's pooling operation.
-    edge_lookup: np.ndarray
+    edge_lookup: np.ndarray  # (num_edges, 4)
 
     # Map vertex indices to lists of edge indices.
     vertex_to_edges: List[Optional[Set[EdgeConnection]]]

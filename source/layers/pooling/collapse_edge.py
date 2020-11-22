@@ -11,6 +11,14 @@ def collapse_edge(mesh: Mesh, edge_key: int, snapshot: CollapseSnapshot):
     CollapseSnapshot with information about which edges have been collapsed.
     Note that the collapsed edge is parented to both surviving edges.
 
+    Important: This edge collapse operation does not modify the faces. As a
+    result, the mesh's faces will point to invalid vertices. This is because
+    it's assumed that the collapse (pooling) operation will be accompanied by an
+    unpooling operation, and that it won't be necessary to export a valid mesh
+    created by this edge collapse. In other words, this edge collapse only
+    updates the mesh with the information needed to pool edge-based features and
+    determine which further edge collapses would be valid.
+
     Return True if the collapse succeeds. If the collapse would create
     non-manifold geometry, return False.
     """
@@ -55,8 +63,6 @@ def collapse_edge(mesh: Mesh, edge_key: int, snapshot: CollapseSnapshot):
 
     # Update the mesh's num_edges.
     mesh.num_edges -= 3
-
-    # TODO: Update faces?
 
     return True
 
