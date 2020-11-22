@@ -138,3 +138,53 @@ class Mesh:
         self.edges = np.array(key_to_edge, dtype=np.int32)
         self.edge_to_neighbors = np.array(edge_to_neighbors, dtype=np.int64)
         self.edge_lookup = np.array(edge_lookup, dtype=np.int64)
+
+    def collapse_masked_elements(self) -> None:
+        """Rebuild the mesh without its masked elements. This creates a smaller
+        mesh where nothing is masked off.
+        """
+
+        # Map each unmasked vertex to its new index.
+        self.vertices = self.vertices[self.vertex_mask]
+        new_vertex_indices = np.zeros_like(self.vertex_mask, dtype=np.int32)
+        new_vertex_indices[self.vertex_mask] = np.arange(self.vertices.shape[0])
+
+        # Update the edges. This requires two changes:
+        # 1) Masked-off edges have to be removed.
+        # 2) The vertex pair defining an edge has to be re-indexed to account
+        #    for masked-off vertices that were removed.
+        self.edges = new_vertex_indices[self.edges[self.edge_mask]]
+
+        # Map each unmasked edge to its new index.
+        new_edge_indices = np.zeros_like(self.edge_mask, dtype=np.int32)
+        new_edge_indices[self.edge_mask] = np.arange(self.edges.shape[0])
+
+        # Update edge_to_neighbors. This similarly requires two changes:
+        # 1) Masked-off edges have to be removed.
+        # 2) The neighbors have to be re-indexed to account for masked-off edges
+        #    that were removed.
+        self.edge_to_neighbors = new_edge_indices[
+            self.edge_to_neighbors[self.edge_mask]
+        ]
+
+        # Update vertex_to_edges.
+        new_vertex_to_edges = []
+        for edge_connections in self.vertex_to_edges:
+            # Remove masked-off vertices.
+            if edge_connections is None:
+                continue
+
+            # Re-index edge keys (indices).
+            new_edge_connections = {
+                EdgeConnection(new_edge_indices[old.edge_index], old.index_in_edge)
+                for old in edge_connections
+            }
+            new_vertex_to_edges.append(new_edge_connections)
+        self.vertex_to_edges = new_vertex_to_edges
+
+        # Update edge_lookup. This simply requires masked edges to be removed.
+        self.edge_lookup = self.edge_lookup[self.edge_mask]
+
+        # Reset the masks.
+        self.edge_mask = np.ones((self.edges.shape[0],), dtype=np.bool)
+        self.vertex_mask = np.ones((self.vertices.shape[0],), dtype=np.bool)

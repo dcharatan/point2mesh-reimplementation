@@ -4,6 +4,7 @@ import numpy as np
 from typing import Tuple
 from ....mesh.MeshChecker import MeshChecker
 from ....mesh.Mesh import Mesh
+from ..CollapseSnapshot import CollapseSnapshot
 from ..collapse_edge import check_collapse_manifold, collapse_edge
 
 
@@ -30,16 +31,18 @@ class TestCollapseEdge(unittest.TestCase):
         num_edges = Mesh(vertices, faces).edges.shape[0]
         for edge_key in range(num_edges):
             mesh = Mesh(vertices, faces)
+            snapshot = CollapseSnapshot(mesh)
             checker = MeshChecker(mesh)
-            self.assertTrue(collapse_edge(mesh, edge_key))
+            self.assertTrue(collapse_edge(mesh, edge_key, snapshot))
             self.assertTrue(checker.check_validity())
 
     def test_collapse_sequential_icosahedron_edges(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
         mesh = Mesh(vertices, faces)
+        snapshot = CollapseSnapshot(mesh)
         checker = MeshChecker(mesh)
         edge_key = 0
         for _ in range(mesh.edges.shape[0]):
-            collapse_edge(mesh, edge_key)
+            collapse_edge(mesh, edge_key, snapshot)
             self.assertTrue(checker.check_validity())
             edge_key += 1

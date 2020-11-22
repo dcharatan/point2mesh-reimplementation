@@ -1,12 +1,15 @@
 from ...mesh.Mesh import Mesh
 from ...mesh.EdgeConnection import EdgeConnection
+from .CollapseSnapshot import CollapseSnapshot
 
 
-def collapse_edge(mesh: Mesh, edge_key: int):
+def collapse_edge(mesh: Mesh, edge_key: int, snapshot: CollapseSnapshot):
     """Collapse an edge (two triangles) and update edge_mask to remove three
     edges: the one that's being collapsed and two edges that would overlap
     other edges as a result of the collapse. The mesh should be in a
-    consistent state before and after this is called.
+    consistent state before and after this is called. Update the provided
+    CollapseSnapshot with information about which edges have been collapsed.
+    Note that the collapsed edge is parented to both surviving edges.
 
     Return True if the collapse succeeds. If the collapse would create
     non-manifold geometry, return False.
@@ -18,8 +21,8 @@ def collapse_edge(mesh: Mesh, edge_key: int):
 
     # Collapse both sides (triangles).
     kept_vertex, masked_vertex = mesh.edges[edge_key]
-    masked_edge_a = collapse_side(mesh, edge_key, 0)
-    masked_edge_b = collapse_side(mesh, edge_key, 2)
+    masked_edge_a = collapse_side(mesh, edge_key, 0, snapshot)
+    masked_edge_b = collapse_side(mesh, edge_key, 2, snapshot)
 
     # Mask off the collapsed edge.
     mesh.edge_mask[edge_key] = False
@@ -98,7 +101,7 @@ def check_collapse_manifold(mesh: Mesh, edge_key: int):
     )
 
 
-def collapse_side(mesh: Mesh, edge_key: int, side: int):
+def collapse_side(mesh: Mesh, edge_key: int, side: int, snapshot: CollapseSnapshot):
     """Collapse the triangle to the specified side of an edge that's being
     collapsed. Update edge_mask to exclude one of the edges that becomes
     overlapping as a result of the collapse. Calling this alone will leave
@@ -147,6 +150,10 @@ def collapse_side(mesh: Mesh, edge_key: int, side: int):
         odd_neighbor_neighbors[1],
         mesh.edge_lookup[odd_neighbor_key, odd_lookup_opposite + 1],
     )
+
+    # Reparent the collapsed edge and the odd neighbor to the even neighbor.
+    snapshot.reparent(odd_neighbor_key, even_neighbor_key)
+    snapshot.reparent(edge_key, even_neighbor_key)
 
     # Mask off the odd neighbor.
     mesh.edge_mask[odd_neighbor_key] = False

@@ -4,6 +4,8 @@ import numpy as np
 from typing import Tuple
 from ..MeshChecker import MeshChecker
 from ..Mesh import Mesh
+from ...layers.pooling.CollapseSnapshot import CollapseSnapshot
+from ...layers.pooling.collapse_edge import collapse_edge
 
 
 class TestMesh(unittest.TestCase):
@@ -44,4 +46,14 @@ class TestMesh(unittest.TestCase):
         vertices, faces = self.load_obj("data/objs/tetrahedron.obj")
         mesh = Mesh(vertices, faces)
         checker = MeshChecker(mesh)
+        self.assertTrue(checker.check_validity())
+
+    def test_collapse_masked_elements(self):
+        vertices, faces = self.load_obj("data/objs/icosahedron.obj")
+        mesh = Mesh(vertices, faces)
+        snapshot = CollapseSnapshot(mesh)
+        checker = MeshChecker(mesh)
+        for edge_key in range(mesh.edges.shape[0]):
+            collapse_edge(mesh, edge_key, snapshot)
+        mesh.collapse_masked_elements()
         self.assertTrue(checker.check_validity())
