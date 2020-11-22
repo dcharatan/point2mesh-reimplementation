@@ -34,8 +34,8 @@ class TestMesh(unittest.TestCase):
         for degree in vertex_degrees.values():
             self.assertEqual(degree, 5)
 
-    def test_icosahedron_lookup(self):
+    def test_icosahedron_validity(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
         mesh = Mesh(vertices, faces)
         checker = MeshChecker(mesh)
-        self.assertTrue(checker.check_lookup_validity())
+        self.assertTrue(checker.check_validity())
