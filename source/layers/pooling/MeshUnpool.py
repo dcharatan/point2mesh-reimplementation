@@ -38,4 +38,4 @@ class MeshUnpool(Layer):
         """Use the snapshot's relationships to unpool the features. Each new
         edge's feature is simply its parent's feature.
         """
-        return features @ snapshot.extract_relationships()
+        return snapshot.extract_relationships().T @ features

@@ -18,8 +18,8 @@ class TestMeshPool(unittest.TestCase):
         num_edges = self.mesh.edges.shape[0]
         self.mesh_pool = MeshPool(num_edges - 1)
 
-        initial_feature_values = np.zeros((3, num_edges))
-        initial_feature_values[:, :] = np.arange(num_edges)
+        initial_feature_values = np.zeros((num_edges, 3))
+        initial_feature_values[:, :] = np.arange(num_edges)[:, None]
 
         features = tf.Variable(initial_feature_values, dtype=tf.float32)
         self.mesh_pool(self.mesh, features)
@@ -31,7 +31,7 @@ class TestMeshPool(unittest.TestCase):
         num_edges = self.mesh.edges.shape[0]
         self.mesh_pool = MeshPool(num_edges // 2)
 
-        features = tf.Variable(np.ones((7, num_edges)), dtype=tf.float32)
+        features = tf.Variable(np.ones((num_edges, 7)), dtype=tf.float32)
         new_features, _ = self.mesh_pool(self.mesh, features)
 
         self.assertTrue(np.allclose(new_features.numpy(), 1))

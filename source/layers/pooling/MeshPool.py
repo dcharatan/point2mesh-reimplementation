@@ -57,6 +57,6 @@ class MeshPool(Layer):
         """Use the snapshot's relationships to pool the features. Each new
         edge's feature is a weighted average of its children's features.
         """
-        relationships_t = snapshot.extract_relationships().T
-        weighted = relationships_t / np.sum(relationships_t, axis=0)
-        return features @ weighted
+        relationships = snapshot.extract_relationships()
+        weighted = relationships / np.sum(relationships, axis=1)[:, None]
+        return weighted @ features
