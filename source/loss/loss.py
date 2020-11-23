@@ -249,11 +249,6 @@ def get_looping_points(mid_points, point_cloud, k=3):
     #   True if a point maps back to itself at least once amoung 9 options
     #   boolean array of shape (num_faces)
 
-    loop_array = np.equal(
-        neighbors_neighbors,
-        np.expand_dims(np.arange(0, np.shape(mid_points)[0]), axis=1),
-    )
-
     looping_mesh_points_mask = (
         np.sum(
             np.equal(

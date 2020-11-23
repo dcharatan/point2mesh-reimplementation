@@ -1,7 +1,9 @@
+from random import sample
 import numpy as np
 from tensorflow.python.ops.gen_math_ops import arg_min
 from .EdgeConnection import EdgeConnection
 from typing import Optional, List, Set
+import random
 
 
 class Mesh:
@@ -36,6 +38,12 @@ class Mesh:
     # The number of non-masked edges in the mesh.
     num_edges: int
 
+    # contains the area of every face
+    face_areas: np.ndarray  # (num_faces)
+
+    # contains the XYZ unit normal of every face
+    face_unit_normals: np.ndarray  # (num_faces, 3)
+
     def __init__(self, vertices: np.ndarray, faces: np.ndarray) -> None:
         """Create a new mesh.
 
@@ -52,6 +60,7 @@ class Mesh:
         self.edge_mask = np.ones((self.edges.shape[0]), dtype=np.bool)
         self.vertex_mask = np.ones((self.vertices.shape[0]), dtype=np.bool)
         self.num_edges = self.edges.shape[0]
+        self.face_unit_normals, self.face_areas = self.generate_face_areas_normals()
 
     def build_acceleration_structures(self):
         # Map vertex indices
@@ -189,3 +198,97 @@ class Mesh:
         # Reset the masks.
         self.edge_mask = np.ones((self.edges.shape[0],), dtype=np.bool)
         self.vertex_mask = np.ones((self.vertices.shape[0],), dtype=np.bool)
+
+    def generate_face_areas_normals(self):
+        """
+        Inputs:
+            verticies: a (num_verticies, 3) numpy array holding the XYZ coordinates of each vertex
+            faces: a (num_faces, 3) numpy array containing the row index for all three verticies
+                that make up a face
+        return:
+            face_unit_normals: a (num_faces, 3) numpy array represeting the XYZ components of the face's normal vector
+            face_areas: a (num_faces) numpy array representing the area of the face
+        """
+        verticies = self.vertices
+        faces = self.faces
+
+        # creates two (num_faces, 3) arrays where the rows are an XYZ vector representing one of the edge vectors
+        edge_vectors_1 = verticies[faces[:, 1]] - verticies[faces[:, 0]]
+        edge_vectors_2 = verticies[faces[:, 2]] - verticies[faces[:, 1]]
+
+        # computes the cross product of the two edge arrays dim (num_faces, 3)
+        edge_cross = np.cross(edge_vectors_1, edge_vectors_2)
+
+        # computes the magnitude of the adge_cross vector dim (numfaces)
+        edge_cross_mag = np.linalg.norm(edge_cross, axis=1)
+
+        # the unit normal is the cross product divided by its magnitude dim (num_faces, 3)
+        face_unit_normals = edge_cross / edge_cross_mag[:, None]
+
+        # a triangle's area is equal to 1/2 * mag(edge cross product) dim (num_faces)
+        face_areas = 0.5 * edge_cross_mag
+
+        return face_unit_normals, face_areas
+
+    def sample_surface(self, count):
+        """
+        ARGS:
+            self.verticies: np array (num_verticies, 3) XYZ coordinate associated with each vertex
+            self.faces: np array (num_faces, 3) set of three row indexesassociated with each face
+            self.face_areas: np array (num_faces) hlding the area of each face
+            self.face_unit_normals: np array (num_faces, 3) representing the XYZ vector of the unti normal for the face
+            count: number of points to sample
+
+        Uses:
+        https://mathworld.wolfram.com/TrianglePointPicking.html
+
+        returns:
+            sample_points: np array (count, 3) XYZ coordinate for randomly sampled points accross the mesh
+            sample_normals: np array (count, 3) XYZ norms for the selected points
+        """
+
+        vertices = self.vertices
+        faces = self.faces
+        face_areas = self.face_areas
+        face_unit_normals = self.face_unit_normals
+
+        # The first step in the sampling method is to select a face for each sample, weighted by the face areas
+        # the shape of face_to_sample will be (count)
+        face_to_sample = random.choices(
+            np.arange(0, np.shape(faces)[0]), weights=face_areas, k=count
+        )
+
+        # sets XYZ "origins" for each triangle as the 0th index vertex (count, 3)
+        origin = vertices[face_to_sample, :]
+
+        # defines the two edges that, with the origin, define the triangle (count, 3)
+        edge_1 = vertices[face_to_sample, :] - origin
+        edge_2 = vertices[face_to_sample[:, 2], :] - origin
+
+        # stacks the two edge matricies together, dim (count, 2, 3)
+        edges = np.stack(edge_1, edge_2, axis=1)
+
+        # computes two values between 0 and 1 that will scale the edge vectors and then summed to compute the points
+        # dim (count, 2)
+        edge_weights = np.random.uniform(size=(count, 2))
+
+        # some points would be outside the triangle. if the sum is less than one then it is insde and thus
+        # inside_triangle is true. dim (count)
+        inside_triange = np.sum(edge_weights, axis=1) < 1.0
+
+        # remaps the points that are outside the trianle inside of the triangle
+        edge_weights[inside_triange] -= 1.0
+        edge_weights = np.abs(edge_weights)
+
+        # computes a sample vector as the weighted sum of the edge vectors using the random weights from above
+        # dim (count, 3)
+        sample_vector = np.sum(edges * edge_weights[:, None], axis=2)
+
+        # sample points are the displacement vector plus the origin
+        # dim (count, 3)
+        sample_points = sample_vector + origin
+
+        # gather the normal for each point from the face it was sampled from
+        sample_normals = face_unit_normals[face_to_sample]
+
+        return sample_points, sample_normals

@@ -57,3 +57,11 @@ class TestMesh(unittest.TestCase):
             collapse_edge(mesh, edge_key, snapshot)
         mesh.collapse_masked_elements()
         self.assertTrue(checker.check_validity())
+
+    def test_face_areas_normals(self):
+        vertices, faces = self.load_obj("data/objs/icosahedron.obj")
+        mesh = Mesh(vertices, faces)
+        areas = mesh.face_areas
+        checker = MeshChecker(mesh)
+        self.assertTrue(np.abs(np.mean(areas) - 4787.286) < 0.01)
+        self.assertTrue(checker.check_validity)
