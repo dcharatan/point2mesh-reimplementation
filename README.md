@@ -8,7 +8,21 @@ To create a virtual environment, run `python3 -m venv venv`. Then, do `source ve
 
 ### Installing OpenEXR
 
+#### Windows
+
 Specifically there seems to be some sort of issues with some Windows machines installing OpenEXR (a critical component of tensorflow-graphics) through `pip3 install OpenEXR` or `pip3 install tensorflow-graphics`. Instead, the best option I found is downloading a precompiled wheel file from `https://www.lfd.uci.edu/~gohlke/pythonlibs/`, moving it to the workspace folder, then running `python -m pip install SomePackage-1.0-py2.py3-none-any.whl`. Then `pip3 install tensorflow-graphics` should work as you have already installed OpenEXR.
+
+#### MacOS
+
+Do the following:
+
+```
+brew install openexr
+export CFLAGS="-I/Users/USERNAME/homebrew/include/OpenEXR -std=c++11"
+export LDFLAGS="-L/Users/USERNAME/homebrew/lib"
+pip3 install openexr
+pip3 install tensorflow-graphics
+```
 
 ### Running Scripts
 

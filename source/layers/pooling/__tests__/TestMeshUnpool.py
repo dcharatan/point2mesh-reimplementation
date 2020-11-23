@@ -20,7 +20,7 @@ class TestMeshUnpool(unittest.TestCase):
         self.mesh_pool = MeshPool(num_edges // 2)
         self.mesh_unpool = MeshUnpool()
 
-        original_features = tf.Variable(np.ones((7, num_edges)), dtype=tf.float32)
+        original_features = tf.Variable(np.ones((num_edges, 7)), dtype=tf.float32)
         pooled_features, snapshot = self.mesh_pool(self.mesh, original_features)
         self.mesh_unpool(self.mesh, pooled_features, snapshot)
 
@@ -32,7 +32,7 @@ class TestMeshUnpool(unittest.TestCase):
         self.mesh_pool = MeshPool(num_edges // 2)
         self.mesh_unpool = MeshUnpool()
 
-        original_features = tf.Variable(np.ones((7, num_edges)), dtype=tf.float32)
+        original_features = tf.Variable(np.ones((num_edges, 7)), dtype=tf.float32)
         pooled_features, snapshot = self.mesh_pool(self.mesh, original_features)
         unpooled_features = self.mesh_unpool(self.mesh, pooled_features, snapshot)
 

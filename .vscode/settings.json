@@ -9,6 +9,7 @@
         "**/.DS_Store": true,
         "**/*.pyc": true,
         "**/__pycache__": true,
+        "**/__init__.py": true,
     },
     "search.exclude": {
         "**/node_modules": true,
