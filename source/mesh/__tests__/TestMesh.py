@@ -1,6 +1,7 @@
 import unittest
 import trimesh
 import numpy as np
+import tensorflow as tf
 from typing import Tuple
 from ..MeshChecker import MeshChecker
 from ..Mesh import Mesh
@@ -12,7 +13,7 @@ class TestMesh(unittest.TestCase):
     def load_obj(self, file_name: str) -> Tuple[np.ndarray]:
         with open(file_name, "r") as f:
             mesh = trimesh.exchange.obj.load_obj(f)
-        return mesh["vertices"], mesh["faces"]
+        return np.float32(mesh["vertices"]), mesh["faces"]
 
     def test_icosahedron_smoke(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
@@ -61,7 +62,16 @@ class TestMesh(unittest.TestCase):
     def test_face_areas_normals(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
         mesh = Mesh(vertices, faces)
-        areas = mesh.face_areas
+        normals, areas = mesh.generate_face_areas_normals(mesh.vertices)
         checker = MeshChecker(mesh)
-        self.assertTrue(np.abs(np.mean(areas) - 4787.286) < 0.01)
+        self.assertTrue(np.abs(np.mean(areas.numpy()) - 4787.286) < 0.01)
         self.assertTrue(checker.check_validity)
+
+    def test_sample(self):
+        vertices, faces = self.load_obj("data/objs/icosahedron.obj")
+        mesh = Mesh(vertices, faces)
+        points, normals = mesh.sample_surface(
+            tf.convert_to_tensor(mesh.vertices), 10001
+        )
+        self.assertTrue(np.abs(np.mean(points.numpy())) < 5)
+        self.assertTrue(np.abs(np.mean(normals.numpy())) < 0.5)
