@@ -70,8 +70,6 @@ class TestMesh(unittest.TestCase):
     def test_sample(self):
         vertices, faces = self.load_obj("data/objs/icosahedron.obj")
         mesh = Mesh(vertices, faces)
-        points, normals = mesh.sample_surface(
-            tf.convert_to_tensor(mesh.vertices), 10001
-        )
+        points, normals = mesh.sample_surface(tf.convert_to_tensor(mesh.vertices), 1001)
         self.assertTrue(np.abs(np.mean(points.numpy())) < 5)
         self.assertTrue(np.abs(np.mean(normals.numpy())) < 0.5)

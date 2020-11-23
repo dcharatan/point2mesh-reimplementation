@@ -94,10 +94,11 @@ class BeamGapLossLayer(Layer):
         return l2
 
 
-def discrete_project(mesh, point_cloud, threshold=0.9):
+def discrete_project(mesh, point_cloud, vertices=None, threshold=0.9):
     """
     ARGS:
         self: a Mesh Object
+        vertices: a tf tensor of shape (num_verticies, 3)
         point_cloud: a tf tensor of shap (num_points_in_cloud, 3)
         threshold: a float representing the cosine of the cone angle when checking to see if there exist any points
             within the target pointcloud that are relevant for the mash
@@ -113,6 +114,11 @@ def discrete_project(mesh, point_cloud, threshold=0.9):
     # Check that point_cloud is tensor with corrrect dimension size
     # Check that self is a Mesh
     assert tf.is_tensor(point_cloud)
+    if not tf.is_tensor(vertices):
+        vertices = mesh.vertices
+    else:
+        vertices = vertices.numpy()
+
     assert tf.shape(point_cloud)[-1] == 3
     assert isinstance(mesh, Mesh)
 
@@ -122,15 +128,19 @@ def discrete_project(mesh, point_cloud, threshold=0.9):
     point_cloud = point_cloud.numpy()
 
     # Get face normals for mesh, point normal to the mesh out of the face midpoints
-    mesh_normals = mesh.normals  # (num_faces, 3)
+    mesh_normals, _ = mesh.generate_face_areas_normals(
+        tf.convert_to_tensor(vertices)
+    )  # (num_faces, 3)
+
+    mesh_normals = mesh_normals.numpy()
 
     # Get set of 3 vertexes associated with each face.
     # Compute the midpoint of every face by taking the mean of each dimension over the 3 verticies
     # Also get numpy as to stop gradient
-    mid_points = mesh.vertices[
+    mid_points = vertices[
         mesh.faces
     ]  # (num_faces, 3(3 vertexes per face), 3(3 coordinates per vertex))
-    mid_points = tf.nn.reduce_mean(
+    mid_points = tf.math.reduce_mean(
         mid_points, axis=1
     ).numpy()  # (num_faces, 3(3 avg coordiates per face))
 
@@ -172,7 +182,7 @@ def discrete_project(mesh, point_cloud, threshold=0.9):
     pc_per_masked_face[min == float("inf"), :] = float("nan")
 
     # creates one of the output objects as a tensor with shape (num_faces, 3)
-    pc_per_face = tf.zeros(
+    pc_per_face = np.zeros(
         shape=(np.shape(mid_points)[0], 3), dtype=pc_per_masked_face.dtype
     )
 
@@ -189,7 +199,7 @@ def discrete_project(mesh, point_cloud, threshold=0.9):
     pc_is_non_nan = pc_per_face[:, 0] == pc_per_face[:, 0]
 
     # return objects
-    return pc_per_face, pc_is_non_nan
+    return tf.convert_to_tensor(pc_per_face), tf.convert_to_tensor(pc_is_non_nan)
 
 
 def get_looping_points(mid_points, point_cloud, k=3):

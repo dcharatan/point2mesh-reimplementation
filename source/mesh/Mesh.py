@@ -241,8 +241,8 @@ class Mesh:
         https://mathworld.wolfram.com/TrianglePointPicking.html
 
         returns:
-            sample_points: np array (count, 3) XYZ coordinate for randomly sampled points accross the mesh
-            sample_normals: np array (count, 3) XYZ norms for the selected points
+            sample_points: tf (count, 3) XYZ coordinate for randomly sampled points accross the mesh
+            sample_normals: tf (count, 3) XYZ norms for the selected points
         """
 
         faces = self.faces

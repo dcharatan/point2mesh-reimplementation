@@ -19,8 +19,7 @@ class TestLoss(unittest.TestCase):
     def load_obj_into_mesh(self, file_name: str) -> Tuple[np.ndarray]:
         with open(file_name, "r") as f:
             mesh = trimesh.exchange.obj.load_obj(f)
-        verticies, faces = mesh["vertices"], mesh["faces"]
-        mesh = Mesh(verticies, faces)
+        return np.float32(mesh["vertices"]), mesh["faces"]
 
     def test_chamfer_loss_test(self):
         chamfer_loss_layer = ChamferLossLayer()
@@ -85,3 +84,15 @@ class TestLoss(unittest.TestCase):
                 np.equal(mask, np.array([[True, True], [True, False], [False, False]]))
             )
         )
+
+    def test_discrete_project(self):
+        vertices, faces = self.load_obj_into_mesh("data/objs/icosahedron.obj")
+        mesh = Mesh(vertices, faces)
+        test_layer = BeamGapLossLayer("cpu", discrete_project)
+        test_point_cloud, _ = mesh.sample_surface(
+            tf.convert_to_tensor(mesh.vertices), 3
+        )
+        test_layer.update_points_masks(mesh, test_point_cloud)
+        points = test_layer.points.numpy()
+        mask = test_layer.mask.numpy()
+        self.assertTrue(True)
