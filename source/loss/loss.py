@@ -82,7 +82,7 @@ class BeamGapLossLayer(Layer):
         # losses is a (numfaces, 3) tensor where the XYZ coordinate is the the distance
         # from the closest point on the point cloud to the mid_point of a given face.
         # Note that the faces we want to ignore (looping or no PC point within cone) will have nan values here
-        losses = self.points - tf.math.reduce_mean(mesh.verticies[mesh.faces], axis=1)
+        losses = self.points - tf.math.reduce_mean(mesh.vertices[mesh.faces], axis=1)
 
         # compute the "length" of the loss by computing norm of the XYZ
         # also only select the non-nan points for the loss
@@ -98,7 +98,7 @@ def discrete_project(mesh, point_cloud, vertices=None, threshold=0.9):
     """
     ARGS:
         self: a Mesh Object
-        vertices: a tf tensor of shape (num_verticies, 3)
+        vertices: a tf tensor of shape (num_vertices, 3)
         point_cloud: a tf tensor of shap (num_points_in_cloud, 3)
         threshold: a float representing the cosine of the cone angle when checking to see if there exist any points
             within the target pointcloud that are relevant for the mash
@@ -135,7 +135,7 @@ def discrete_project(mesh, point_cloud, vertices=None, threshold=0.9):
     mesh_normals = mesh_normals.numpy()
 
     # Get set of 3 vertexes associated with each face.
-    # Compute the midpoint of every face by taking the mean of each dimension over the 3 verticies
+    # Compute the midpoint of every face by taking the mean of each dimension over the 3 vertices
     # Also get numpy as to stop gradient
     mid_points = vertices[
         mesh.faces
