@@ -15,6 +15,12 @@
                 "--output",
                 "tmp_convex_hull.obj"
             ]
+        },
+        {
+            "name": "Train Model",
+            "type": "python",
+            "request": "launch",
+            "module": "source.script_modules.train_model",
         }
     ]
 }
