@@ -42,7 +42,6 @@ class Encoder(Layer):
         snapshots = []
         for down_convolution in self.down_convolutions:
             features, snapshot = down_convolution(mesh, features)
-            if snapshot is not None:
-                snapshots.append(snapshot)
+            snapshots.append(snapshot)
 
         return features, snapshots
