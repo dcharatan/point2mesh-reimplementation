@@ -73,3 +73,12 @@ class TestMesh(unittest.TestCase):
         points, normals = mesh.sample_surface(tf.convert_to_tensor(mesh.vertices), 1001)
         self.assertTrue(np.abs(np.mean(points.numpy())) < 5)
         self.assertTrue(np.abs(np.mean(normals.numpy())) < 0.5)
+
+    def test_remesh(self):
+        vertices_old, faces_old = self.load_obj("data/objs/icosahedron.obj")
+        mesh_old = Mesh(vertices_old, faces_old)
+        mesh_new = mesh_old.remesh()
+        vertices_new = mesh_new.vertices
+        faces_new = mesh_new.faces
+        checker = MeshChecker(mesh_new)
+        self.assertTrue(checker.check_validity())

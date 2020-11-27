@@ -5,6 +5,7 @@ import tensorflow_probability as tfp
 from tensorflow.python.ops.gen_math_ops import arg_min
 from .EdgeConnection import EdgeConnection
 from typing import Optional, List, Set
+import trimesh
 import random
 
 
@@ -302,3 +303,12 @@ class Mesh:
         sample_normals = tf.gather(face_unit_normals, face_index)
 
         return sample_points, sample_normals
+
+    def remesh(self):
+        old_vertices = self.vertices
+        old_faces = self.faces
+        new_vertices, new_faces = trimesh.remesh.subdivide(old_vertices, old_faces)
+
+        new_mesh = Mesh(np.array(new_vertices), np.array(new_faces))
+
+        return new_mesh
