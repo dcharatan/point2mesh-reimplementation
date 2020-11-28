@@ -5,8 +5,8 @@ import tensorflow_probability as tfp
 from tensorflow.python.ops.gen_math_ops import arg_min
 from .EdgeConnection import EdgeConnection
 from typing import Optional, List, Set
-import trimesh
-import random
+import os
+import uuid
 
 
 class Mesh:
@@ -304,11 +304,35 @@ class Mesh:
 
         return sample_points, sample_normals
 
-    def remesh(self):
-        old_vertices = self.vertices
-        old_faces = self.faces
-        new_vertices, new_faces = trimesh.remesh.subdivide(old_vertices, old_faces)
 
-        new_mesh = Mesh(np.array(new_vertices), np.array(new_faces))
+def manifold_upsample(mesh: Mesh, save_path, num_faces=2000, res=3000, simplify=True):
 
-        return new_mesh
+    manifold_script_path = os.path.join(MANIFOLD_DIR, "manifold")
+
+    temp_file_name = random_file_name("obj")
+
+    cmd = "{} {} {}".format(manifold_script_path, save_path, temp_file_name)
+
+    os.system(cmd)
+
+    if simplify:
+        cmd = "{} -i {} -o {} -f {}".format(
+            os.path.join(MANIFOLD_DIR, "simplify"),
+            temp_file_name,
+            temp_file_name,
+            num_faces,
+        )
+        os.system(cmd)
+
+    mesh_out = Mesh(load_obj(temp_file_name))
+    return mesh_out
+
+
+def random_file_name(ext, prefix="temp"):
+    return f"{prefix}{uuid.uuid4()}.{ext}"
+
+
+def load_obj(self, file_name: str) -> Tuple[np.ndarray]:
+    with open(file_name, "r") as f:
+        mesh = trimesh.exchange.obj.load_obj(f)
+    return np.float32(mesh["vertices"]), mesh["faces"]

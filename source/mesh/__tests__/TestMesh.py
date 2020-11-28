@@ -75,10 +75,13 @@ class TestMesh(unittest.TestCase):
         self.assertTrue(np.abs(np.mean(normals.numpy())) < 0.5)
 
     def test_remesh(self):
-        vertices_old, faces_old = self.load_obj("data/objs/icosahedron.obj")
+        vertices_old, faces_old = self.load_obj("data/objs/cylinder.obj")
         mesh_old = Mesh(vertices_old, faces_old)
         mesh_new = mesh_old.remesh()
         vertices_new = mesh_new.vertices
         faces_new = mesh_new.faces
         checker = MeshChecker(mesh_new)
         self.assertTrue(checker.check_validity())
+        mesh_for_saving = trimesh.Trimesh(vertices=vertices_new, faces=faces_new)
+        with open("tmp_out_test_remesh.obj", "w") as f:
+            f.write(trimesh.exchange.obj.export_obj(mesh_for_saving))
