@@ -142,3 +142,6 @@ cython_debug/
 
 # Temporary script outputs
 tmp*
+
+# Manifold software
+Manifold

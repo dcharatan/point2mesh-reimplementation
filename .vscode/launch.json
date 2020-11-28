@@ -17,6 +17,18 @@
             ]
         },
         {
+            "name": "Remesh Convex Hull",
+            "type": "python",
+            "request": "launch",
+            "module": "source.script_modules.remesh_obj",
+            "args": [
+                "--input",
+                "tmp_convex_hull.obj",
+                "--output",
+                "tmp_remeshed_convex_hull.obj"
+            ]
+        },
+        {
             "name": "Train Model",
             "type": "python",
             "request": "launch",
