@@ -29,4 +29,5 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": true,
     "editor.rulers": [80],
+    "editor.formatOnSave": true,
 }
