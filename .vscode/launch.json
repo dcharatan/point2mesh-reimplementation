@@ -11,7 +11,7 @@
             "module": "source.script_modules.create_convex_hull",
             "args": [
                 "--input",
-                "data/elephant.pwn",
+                "data/point_clouds/elephant.pwn",
                 "--output",
                 "tmp_convex_hull.obj"
             ]

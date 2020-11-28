@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "venv/bin/python3.8",
+    "python.pythonPath": "venv/bin/python3",
     "python.formatting.provider": "black",
     "files.exclude": {
         "**/.git": true,

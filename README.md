@@ -24,6 +24,16 @@ pip3 install openexr
 pip3 install tensorflow-graphics
 ```
 
+#### Ubuntu
+
+```
+sudo apt-get install python3-dev
+sudo apt-get install libopenexr-dev
+sudo apt-get install openexr
+pip3 install openexr
+pip3 install tensorflow-graphics
+```
+
 ### Running Scripts
 
 The scripts in `script_modules` can be run as Python modules. To run `create_convex_hull.py`, run the command `python3 -m source.script_modules.create_convex_hull` from the project's root directory. Several VS Code run configurations are included in `.vscode/launch.json`.
