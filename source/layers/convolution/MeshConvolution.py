@@ -10,9 +10,19 @@ class MeshConvolution(Layer):
     computing convolution between edges and 4 incident (1-ring) edge neighbors.
     """
 
-    def __init__(self, out_channels):
+    def __init__(
+        self,
+        out_channels,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+    ):
         Layer.__init__(self)
-        self.conv = tf.keras.layers.Conv2D(filters=out_channels, kernel_size=(1, 5))
+        self.conv = tf.keras.layers.Conv2D(
+            filters=out_channels,
+            kernel_size=(1, 5),
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer,
+        )
 
     def call(self, mesh: Mesh, features: tf.Tensor) -> tf.Tensor:
         """Compute convolution between edges and 4 incident (1-ring) edge
