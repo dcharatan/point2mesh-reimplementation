@@ -257,8 +257,7 @@ class Mesh:
         face_distribution = tfp.distributions.Categorical(probs=face_areas)
 
         # samples the distribution count number of times, then gets the face row value for the relevant face
-        face_to_sample = [face_distribution.sample() for i in range(count)]
-        face_to_sample = tf.stack(face_to_sample)
+        face_to_sample = face_distribution.sample(count)
         face_index = face_to_sample  # (count)
         face_to_sample = tf.gather(faces, face_to_sample)  # (count, 3)
 
