@@ -1,12 +1,13 @@
-from source.model.get_vertex_features import get_vertex_features
 import tensorflow as tf
 import numpy as np
 import trimesh
 from ..mesh.Mesh import Mesh
 from ..model.PointToMeshModel import PointToMeshModel
+from ..model.get_vertex_features import get_vertex_features
 from ..loss.ChamferLossLayer import ChamferLossLayer
 from ..loss.loss import BeamGapLossLayer, discrete_project
 from ..mesh.remesh import remesh
+import time
 
 print("Training PointToMeshModel.")
 physical_devices = tf.config.list_physical_devices("GPU")
@@ -40,8 +41,9 @@ target_point_cloud = tf.convert_to_tensor(points[:, :3], dtype=tf.float32)
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 current_vertices = remeshed_vertices
 for i in range(1000):
+    iteration_start_time = time.time()
     with tf.GradientTape() as tape:
-        features = model(mesh, initial_feature_values)
+        features = model(mesh, in_features)
 
         vertex_offsets = get_vertex_features(mesh, features)
         new_vertices = current_vertices + vertex_offsets
@@ -54,10 +56,6 @@ for i in range(1000):
 
         total_loss = chamfer_loss  # + beam_gap_loss
 
-        print(f"Chamfer loss: {chamfer_loss.numpy().item()}")
-        # print(f"Beam gap loss: {beam_gap_loss.numpy().item()}")
-        print(f"Total loss: {total_loss.numpy().item()}")
-
     if i % 5 == 0:
         with open(f"tmp_out_{str(i).zfill(3)}.obj", "w") as f:
             tmesh = trimesh.Trimesh(faces=remeshed_faces, vertices=new_vertices)
@@ -65,7 +63,10 @@ for i in range(1000):
 
     gradients = tape.gradient(total_loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
     mesh.vertices = current_vertices
+
+    print(
+        f"Loss: {total_loss.numpy().item()}, elapsed: {time.time() - iteration_start_time}"
+    )
 
 print("Done.")

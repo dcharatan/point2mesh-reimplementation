@@ -37,6 +37,20 @@ class Mesh:
     # The number of non-masked edges in the mesh.
     num_edges: int
 
+    # The maximum vertex degree of the initial (un-collapsed) mesh.
+    max_vertex_degree: int
+
+    # This contains the contents of vertex_to_edges. The shape is the follwoing:
+    # (num_vertices * max_vertex_degree, 2)
+    # The first column contains the edge index, while the second contains the
+    # index in the edge. For vertices whose degree is less than the maximum
+    # degree, the empty parts have index -1. This is used to convert edge
+    # features to vertex features.
+    vertex_to_edges_tensor: tf.Tensor
+
+    # This is also used to convert edge features to vertex features.
+    vertex_to_degree: tf.Tensor
+
     def __init__(self, vertices: np.ndarray, faces: np.ndarray) -> None:
         """Create a new mesh.
 
@@ -140,6 +154,24 @@ class Mesh:
         self.edges = np.array(key_to_edge, dtype=np.int32)
         self.edge_to_neighbors = np.array(edge_to_neighbors, dtype=np.int64)
         self.edge_lookup = np.array(edge_lookup, dtype=np.int64)
+
+        # Record the maximum vertex degree.
+        self.max_vertex_degree = max([len(ec) for ec in self.vertex_to_edges])
+
+        # This is used to extract vertex features from edges.
+        self.vertex_to_edges_tensor = []
+        self.vertex_to_degree = []
+        for ecs in self.vertex_to_edges:
+            vertex_info = [(ec.edge_index, ec.index_in_edge) for ec in ecs]
+            vertex_info.extend(
+                [(-1, -1) for _ in range(self.max_vertex_degree - len(ecs))]
+            )
+            self.vertex_to_edges_tensor.extend(vertex_info)
+            self.vertex_to_degree.append(len(ecs))
+        self.vertex_to_edges_tensor = tf.convert_to_tensor(self.vertex_to_edges_tensor)
+        self.vertex_to_degree = tf.convert_to_tensor(
+            self.vertex_to_degree, dtype=tf.float32
+        )
 
     def collapse_masked_elements(self) -> None:
         """Rebuild the mesh without its masked elements. This creates a smaller
