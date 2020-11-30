@@ -6,12 +6,9 @@ from ..mesh.Mesh import Mesh
 
 
 class BeamGapLossLayer(Layer):
-    def __init__(self, device, target_function) -> None:
+    def __init__(self, target_function) -> None:
 
         super(BeamGapLossLayer, self).__init__()
-
-        # Sets the device to use equal to device
-        self.device = device
 
         # Sets the target function. In this case is mesh.discrete project except for debugging
         self.target_function = target_function

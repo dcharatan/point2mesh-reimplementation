@@ -5,6 +5,7 @@ import trimesh
 from ..mesh.Mesh import Mesh
 from ..model.PointToMeshModel import PointToMeshModel
 from ..loss.ChamferLossLayer import ChamferLossLayer
+from ..loss.loss import BeamGapLossLayer, discrete_project
 from ..mesh.remesh import remesh
 
 print("Training PointToMeshModel.")
@@ -32,10 +33,11 @@ initial_feature_values = np.random.random((mesh.edges.shape[0], 6)) - 0.5
 in_features = tf.convert_to_tensor(initial_feature_values, dtype=tf.float32)
 
 loss_layer = ChamferLossLayer()
+bg_loss_layer = BeamGapLossLayer(discrete_project)
 
 # Test out differentiation with respect to meaningless loss.
 target_point_cloud = tf.convert_to_tensor(points[:, :3], dtype=tf.float32)
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 current_vertices = remeshed_vertices
 for i in range(1000):
     with tf.GradientTape() as tape:
@@ -47,15 +49,21 @@ for i in range(1000):
         surface_sample = mesh.sample_surface(new_vertices, 10000)
 
         chamfer_loss = loss_layer(surface_sample[0], target_point_cloud)
+        # bg_loss_layer.update_points_masks(mesh, target_point_cloud)
+        # beam_gap_loss = bg_loss_layer(mesh) * 0.01
 
-        print(chamfer_loss)
+        total_loss = chamfer_loss  # + beam_gap_loss
+
+        print(f"Chamfer loss: {chamfer_loss.numpy().item()}")
+        # print(f"Beam gap loss: {beam_gap_loss.numpy().item()}")
+        print(f"Total loss: {total_loss.numpy().item()}")
 
     if i % 5 == 0:
         with open(f"tmp_out_{str(i).zfill(3)}.obj", "w") as f:
             tmesh = trimesh.Trimesh(faces=remeshed_faces, vertices=new_vertices)
             f.write(trimesh.exchange.obj.export_obj(tmesh))
 
-    gradients = tape.gradient(chamfer_loss, model.trainable_variables)
+    gradients = tape.gradient(total_loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
     mesh.vertices = current_vertices

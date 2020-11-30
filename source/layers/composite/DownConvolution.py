@@ -41,7 +41,7 @@ class DownConvolution(Layer):
         # Run through the first ConvolutionSequence.
         out_features = self.convolutions[0](mesh, features)
         out_features = self.leaky_relu(out_features)
-        out_features = self.batch_normalizations[0](out_features)
+        out_features = self.batch_normalizations[0](out_features, training=True)
 
         # Run the remaining ConvolutionSequences with skip connections.
         in_features = out_features
@@ -49,7 +49,7 @@ class DownConvolution(Layer):
             # Create out_features using in_features.
             out_features = self.convolutions[i](mesh, in_features)
             out_features = self.leaky_relu(out_features)
-            out_features = self.batch_normalizations[i](out_features)
+            out_features = self.batch_normalizations[i](out_features, training=True)
 
             # Add the skip connections.
             out_features += in_features
