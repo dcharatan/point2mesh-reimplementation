@@ -40,7 +40,7 @@ model = PointToMeshModel()
 chamfer_loss = ChamferLossLayer()
 beam_loss = BeamGapLossLayer(discrete_project)
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
-num_subdivisions = 3
+num_subdivisions = options["num_subdivisions"]
 for subdivision_level in range(num_subdivisions):
     # Subdivide the mesh if beyond the first level.
     if subdivision_level != 0:
@@ -51,7 +51,7 @@ for subdivision_level in range(num_subdivisions):
     # Create the random features.
     in_features = tf.random.uniform((mesh.edges.shape[0], 6), -0.5, 0.5)
 
-    num_iterations = 1000
+    num_iterations = options["num_iterations"]
     for iteration in range(num_iterations):
         iteration_start_time = time.time()
 
