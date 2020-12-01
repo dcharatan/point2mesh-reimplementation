@@ -46,7 +46,7 @@ for subdivision_level in range(num_subdivisions):
     if subdivision_level != 0:
         raise Exception("Not yet implemented!")
     else:
-        vertices = tf.convert_to_tensor(remeshed_vertices, dtype=tf.float32)
+        old_vertices = tf.convert_to_tensor(remeshed_vertices, dtype=tf.float32)
 
     # Create the random features.
     in_features = tf.random.uniform((mesh.edges.shape[0], 6), -0.5, 0.5)
@@ -58,8 +58,7 @@ for subdivision_level in range(num_subdivisions):
         with tf.GradientTape() as tape:
             # Get new vertex positions by calling the model.
             features = model(mesh, in_features)
-            vertex_offsets = get_vertex_features(mesh, features)
-            new_vertices = vertices + vertex_offsets
+            new_vertices = old_vertices + get_vertex_features(mesh, features)
 
             # Calculate loss.
             surface_sample = mesh.sample_surface(new_vertices, 10000)
@@ -73,7 +72,7 @@ for subdivision_level in range(num_subdivisions):
         if iteration % 5 == 0:
             Obj.save(
                 f"tmp_out_{str(iteration).zfill(3)}.obj",
-                vertices.numpy(),
+                new_vertices.numpy(),
                 remeshed_faces,
             )
 
