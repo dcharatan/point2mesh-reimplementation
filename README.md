@@ -6,6 +6,19 @@
 
 To create a virtual environment, run `python3 -m venv venv`. Then, do `source venv/bin/activate` (or equivalent) and `pip3 install -r requirements.txt` to install the project's dependencies.
 
+### Manifold Software Dependency
+
+The remeshing and simplification operations Point2Mesh depends on require [this watertight manifold software](https://github.com/hjwdzh/Manifold). To install it, `cd` into the `point2mesh-reimplementation` folder and run the following:
+
+```
+git clone --recursive -j8 git://github.com/hjwdzh/Manifold
+cd Manifold
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+```
+
 ### Installing OpenEXR
 
 #### Windows
