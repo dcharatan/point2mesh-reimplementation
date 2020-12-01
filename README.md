@@ -42,6 +42,53 @@ The scripts in `script_modules` can be run as Python modules. To run `create_con
 
 To run the unit tests in VS Code, open the command menu (<kbd>⌘ Command</kbd> <kbd>⇧ Shift</kbd> <kbd>P</kbd> on MacOS) and run `Python: Discover Tests` and then `Python: Run All Tests`. I recommend discovering and running tests through Python Test Explorer for Visual Studio Code (`littlefoxteam.vscode-python-test-adapter`) if you add more tests, since it's hard to diagnose broken tests that aren't being discovered with the default test explorer.
 
+### GCP VM Creation Steps
+
+Disclaimer: This is a bit hacky since GCP's setup precludes usage of the normal venv setup.
+
+First, make a VM:
+
+- Region: `us-west1 (Oregon)`
+- Series: `N1`
+- Machine type: `n1-standard-4 (4 vCPU, 15 GB memory)`
+- Under `CPU platform and GPU`: Add one `NVIDIA Tesla V100` GPU
+- Scroll down and check `Allow HTTP traffic` and `Allow HTTPS traffic`
+- Set the boot disk to `Deep Learning on Linux` and `Intel® optimized Deep Learning Image: TensorFlow 2.3 m59 (with Intel® MKL-DNN/MKL and CUDA 110)`.
+
+Now, SSH into the VM under `Open in browser window`. You might have to wait a few minutes before this is possible (before that, it might hang). Now, in the terminal:
+
+- When it prompts you for driver installation when you first log in, say yes.
+
+Now run the following commands:
+
+```
+git clone https://github.com/dcharatan/point2mesh-reimplementation.git
+cd point2mesh-reimplementation
+
+git clone --recursive -j8 git://github.com/hjwdzh/Manifold
+cd Manifold
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+
+cd ~/point2mesh-reimplementation
+pip3 install trimesh
+rm -rf /opt/conda/lib/python3.7/site-packages/cloudpickle
+pip3 install cloudpickle==1.4.0
+sudo apt-get install libopenexr-dev
+sudo apt-get install openexr
+pip3 install tensorflow-graphics
+```
+
+Now you can run the training script via:
+
+```
+python3 -m source.script_modules.train_model
+```
+
+It's about twice as fast as the RTX 2060S I have at home.
+
 ## Acknowledgements
 
 The files `elephant.pwn`, `hand.pwn` and `sphere.pwn` were taken from Alex Jacobson's [mesh reconstruction project](https://github.com/alecjacobson/geometry-processing-mesh-reconstruction).
