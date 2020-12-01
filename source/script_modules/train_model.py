@@ -1,72 +1,90 @@
+import time
+import sys
 import tensorflow as tf
 import numpy as np
+from tensorflow.python.keras.backend import dtype
 import trimesh
+import colorama
+from colorama import Fore, Back, Style
 from ..mesh.Mesh import Mesh
+from ..mesh.Obj import Obj
 from ..model.PointToMeshModel import PointToMeshModel
 from ..model.get_vertex_features import get_vertex_features
 from ..loss.ChamferLossLayer import ChamferLossLayer
 from ..loss.loss import BeamGapLossLayer, discrete_project
 from ..mesh.remesh import remesh
-import time
+from ..options.options import load_options
 
-print("Training PointToMeshModel.")
+# This makes Colorama (terminal colors) work on Windows.
+colorama.init()
+
+# Set up CUDA.
 physical_devices = tf.config.list_physical_devices("GPU")
 if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-# Load a mesh.
-with open("data/point_clouds/elephant.pwn", "r") as f:
-    points = np.loadtxt(f)
-    convex_hull = trimesh.convex.convex_hull(points[:, :3])
-
-# Create the model.
-model = PointToMeshModel()
+# Load the options and the point cloud.
+options = load_options(sys.argv)
+with open(options["point_cloud"], "r") as f:
+    point_cloud_np = np.loadtxt(f)[:, :3]
+point_cloud_tf = tf.convert_to_tensor(point_cloud_np, dtype=tf.float32)
 
 # Create the mesh.
+convex_hull = trimesh.convex.convex_hull(point_cloud_np)
 remeshed_vertices, remeshed_faces = remesh(convex_hull.vertices, convex_hull.faces)
-with open("tmp_out.obj", "w") as f:
-    tmesh = trimesh.Trimesh(vertices=remeshed_vertices, faces=remeshed_faces)
-    f.write(trimesh.exchange.obj.export_obj(tmesh))
+Obj.save("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 mesh = Mesh(remeshed_vertices, remeshed_faces)
 
-# Create some random inputs.
-initial_feature_values = np.random.random((mesh.edges.shape[0], 6)) - 0.5
-in_features = tf.convert_to_tensor(initial_feature_values, dtype=tf.float32)
-
-loss_layer = ChamferLossLayer()
-bg_loss_layer = BeamGapLossLayer(discrete_project)
-
-# Test out differentiation with respect to meaningless loss.
-target_point_cloud = tf.convert_to_tensor(points[:, :3], dtype=tf.float32)
+# Create and train the model.
+model = PointToMeshModel()
+chamfer_loss = ChamferLossLayer()
+beam_loss = BeamGapLossLayer(discrete_project)
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
-current_vertices = remeshed_vertices
-for i in range(1000):
-    iteration_start_time = time.time()
-    with tf.GradientTape() as tape:
-        features = model(mesh, in_features)
+num_subdivisions = 3
+for subdivision_level in range(num_subdivisions):
+    # Subdivide the mesh if beyond the first level.
+    if subdivision_level != 0:
+        raise Exception("Not yet implemented!")
+    else:
+        vertices = tf.convert_to_tensor(remeshed_vertices, dtype=tf.float32)
 
-        vertex_offsets = get_vertex_features(mesh, features)
-        new_vertices = current_vertices + vertex_offsets
+    # Create the random features.
+    in_features = tf.random.uniform((mesh.edges.shape[0], 6), -0.5, 0.5)
 
-        surface_sample = mesh.sample_surface(new_vertices, 10000)
+    num_iterations = 1000
+    for iteration in range(num_iterations):
+        iteration_start_time = time.time()
 
-        chamfer_loss = loss_layer(surface_sample[0], target_point_cloud)
-        # bg_loss_layer.update_points_masks(mesh, target_point_cloud)
-        # beam_gap_loss = bg_loss_layer(mesh) * 0.01
+        with tf.GradientTape() as tape:
+            # Get new vertex positions by calling the model.
+            features = model(mesh, in_features)
+            vertex_offsets = get_vertex_features(mesh, features)
+            new_vertices = vertices + vertex_offsets
 
-        total_loss = chamfer_loss  # + beam_gap_loss
+            # Calculate loss.
+            surface_sample = mesh.sample_surface(new_vertices, 10000)
+            total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
 
-    if i % 5 == 0:
-        with open(f"tmp_out_{str(i).zfill(3)}.obj", "w") as f:
-            tmesh = trimesh.Trimesh(faces=remeshed_faces, vertices=new_vertices)
-            f.write(trimesh.exchange.obj.export_obj(tmesh))
+        # Apply gradients.
+        gradients = tape.gradient(total_loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
-    gradients = tape.gradient(total_loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    mesh.vertices = current_vertices
+        # Save the obj every few iterations.
+        if iteration % 5 == 0:
+            Obj.save(
+                f"tmp_out_{str(iteration).zfill(3)}.obj",
+                vertices.numpy(),
+                remeshed_faces,
+            )
 
-    print(
-        f"Loss: {total_loss.numpy().item()}, elapsed: {time.time() - iteration_start_time}"
-    )
+        # Log a progress update.
+        message = [
+            f"{Back.WHITE}{Fore.BLACK}"
+            f" {subdivision_level + 1}/{num_subdivisions} & {iteration + 1}/{num_iterations}",
+            f"{Style.RESET_ALL}",
+            f"Loss: {total_loss.numpy().item()},",
+            f"Time: {time.time() - iteration_start_time}",
+        ]
+        print(" ".join(message))
 
 print("Done.")

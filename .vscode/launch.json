@@ -33,6 +33,7 @@
             "type": "python",
             "request": "launch",
             "module": "source.script_modules.train_model",
+            "args": ["data/point_clouds/elephant_settings.json"]
         }
     ]
 }
