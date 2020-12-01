@@ -62,7 +62,12 @@ for subdivision_level in range(num_subdivisions):
 
             # Calculate loss.
             surface_sample = mesh.sample_surface(new_vertices, 10000)
-            total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
+            use_beamgap_loss = iteration % 3 == 0
+            if use_beamgap_loss:
+                beam_loss.update_points_masks(mesh, new_vertices, point_cloud_tf)
+                total_loss = beam_loss(mesh, new_vertices)
+            else:
+                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
 
         # Apply gradients.
         gradients = tape.gradient(total_loss, model.trainable_variables)
@@ -77,11 +82,12 @@ for subdivision_level in range(num_subdivisions):
             )
 
         # Log a progress update.
+        loss_type = "Beam-gap" if use_beamgap_loss else "Chamfer"
         message = [
             f"{Back.WHITE}{Fore.BLACK}"
             f" {subdivision_level + 1}/{num_subdivisions} & {iteration + 1}/{num_iterations}",
             f"{Style.RESET_ALL}",
-            f"Loss: {total_loss.numpy().item()},",
+            f"{loss_type} Loss: {total_loss.numpy().item()},",
             f"Time: {time.time() - iteration_start_time}",
         ]
         print(" ".join(message))

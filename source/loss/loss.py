@@ -19,7 +19,7 @@ class BeamGapLossLayer(Layer):
         self.points = None
         self.masks = None
 
-    def update_points_masks(self, mesh, target_point_cloud):
+    def update_points_masks(self, mesh, vertices, target_point_cloud):
 
         """
         Updates self.points and self.mask
@@ -29,32 +29,21 @@ class BeamGapLossLayer(Layer):
                 there is no point cloud point within the cone (see below)
         self.mask: a (num_faces) tensor that is True if the coordinates in a given row are not nan, alse otherwise
         """
-        self.points, self.mask = self.target_function(mesh, target_point_cloud, 0.99)
+        self.points, self.mask = self.target_function(
+            mesh, vertices, target_point_cloud, 0.99
+        )
 
-    def call(self, mesh):
+    def call(self, mesh: Mesh, vertices: tf.Tensor):
+        # Only calculate beam-gap loss for points that aren't masked off.
+        affected_faces = mesh.faces[self.mask]
+        affected_points = self.points[self.mask]
 
-        """
-        ARGS:
-            self: a beam gap loss layer
-            mesh: a Mesh object
-        return:
-            l2: 10 times the loss which is computed by taking the distance from the desired points to the closest point in the point cloud
-
-        """
-
-        # losses is a (numfaces, 3) tensor where the XYZ coordinate is the the distance
-        # from the closest point on the point cloud to the mid_point of a given face.
-        # Note that the faces we want to ignore (looping or no PC point within cone) will have nan values here
-        losses = self.points - tf.math.reduce_mean(mesh.vertices[mesh.faces], axis=1)
-
-        # compute the "length" of the loss by computing norm of the XYZ
-        # also only select the non-nan points for the loss
-        losses = tf.norm(losses, axis=-1)[self.mask]  # (numfaces)
-
-        # take the reduced mean of all the lengths of the losses and cast as float32. Mutliply by 10
-        l2 = 10.0 * tf.cast(tf.math.reduce_mean(losses), dtype=tf.float32)  # ()
-
-        return l2
+        # This loss is the average distance from each unmasked point to the
+        # closest valid point (i.e. within the cone) in the point cloud.
+        face_vertices = tf.gather(vertices, affected_faces)
+        face_midpoints = tf.math.reduce_mean(face_vertices, axis=1)
+        distances = tf.norm(affected_points - face_midpoints, axis=1)
+        return 10.0 * tf.math.reduce_mean(distances)
 
 
 def discrete_project(mesh, point_cloud, vertices=None, threshold=0.9):
@@ -162,7 +151,9 @@ def discrete_project(mesh, point_cloud, vertices=None, threshold=0.9):
     pc_is_non_nan = pc_per_face[:, 0] == pc_per_face[:, 0]
 
     # return objects
-    return tf.convert_to_tensor(pc_per_face), tf.convert_to_tensor(pc_is_non_nan)
+    return tf.convert_to_tensor(pc_per_face, dtype=tf.float32), tf.convert_to_tensor(
+        pc_is_non_nan, dtype=tf.bool
+    )
 
 
 def get_looping_points(mid_points, point_cloud, k=3):
