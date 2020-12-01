@@ -10,10 +10,10 @@ class PointToMeshModel(Model):
     def __init__(self) -> None:
         super(PointToMeshModel, self).__init__()
         self.encoder = Encoder(
-            (6, 16, 32, 64, 64, 128), 1, 3, 0.01, (None, None, None, None, None, None)
+            (6, 16, 32, 64, 64, 128), 1, 3, 0.01, (1900, 1800, 1700, 1600, None, None)
         )
         self.decoder = Decoder(
-            (64, 64, 32, 16, 6, 6), 1, 1, 0.01, (None, None, None, None, None, None)
+            (64, 64, 32, 16, 6, 6), 1, 1, 0.01, (1900, 1800, 1700, 1600, None, None)
         )
         self.batch_normalization = tf.keras.layers.BatchNormalization()
         initializer = tf.keras.initializers.RandomUniform(-1e-8, 1e-8)
