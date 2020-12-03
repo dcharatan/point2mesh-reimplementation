@@ -62,7 +62,8 @@ for subdivision_level in range(num_subdivisions):
 
             # Calculate loss.
             surface_sample = mesh.sample_surface(new_vertices, 10000)
-            use_beamgap_loss = iteration % 3 == 0
+            # use_beamgap_loss = iteration % 3 == 0
+            use_beamgap_loss = False
             if use_beamgap_loss:
                 beam_loss.update_points_masks(mesh, new_vertices, point_cloud_tf)
                 total_loss = beam_loss(mesh, new_vertices)
