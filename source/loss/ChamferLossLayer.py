@@ -1,11 +1,13 @@
 import tensorflow as tf
 import tensorflow_graphics.nn.loss.chamfer_distance as chamfer_distance
 from tensorflow.keras.layers import Layer
+import tensorflow_probability as tfp
 
 
 class ChamferLossLayer(Layer):
-    def __init__(self) -> None:
+    def __init__(self, max_num_samples = 10000) -> None:
         super(ChamferLossLayer, self).__init__()
+        self.max_num_samples = max_num_samples
 
     def call(self, cloud1, cloud2):
         """
@@ -25,6 +27,22 @@ class ChamferLossLayer(Layer):
         assert tf.shape(cloud1)[-1] == 3
         assert tf.is_tensor(cloud2)
         assert tf.shape(cloud2)[-1] == 3
+
+        if tf.shape(cloud1)[-2]>self.max_num_samples:
+            num_points = tf.shape(cloud1)[-2]
+            point_sample_prob = num_points/self.max_num_samples
+            point_sample_probs = tf.ones()*point_sample_prob
+            point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
+            points_to_sample = point_distribution.sample(self.max_num_samples)
+            cloud1 = tf.gather(cloud1, points_to_sample)
+
+        if tf.shape(cloud2)[-2]>self.max_num_samples:
+            num_points = tf.shape(cloud2)[-2]
+            point_sample_prob = num_points/self.max_num_samples
+            point_sample_probs = tf.ones()*point_sample_prob
+            point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
+            points_to_sample = point_distribution.sample(self.max_num_samples)
+            cloud1 = tf.gather(cloud2, points_to_sample)
 
         # Compute bidirectional, average loss using built in tfg function.
         # Returns the sum of (the mean, minimum, squared distance from cloud 1
