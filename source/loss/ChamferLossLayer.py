@@ -31,7 +31,7 @@ class ChamferLossLayer(Layer):
         if tf.shape(cloud1)[-2]>self.max_num_samples:
             num_points = tf.shape(cloud1)[-2]
             point_sample_prob = num_points/self.max_num_samples
-            point_sample_probs = tf.ones()*point_sample_prob
+            point_sample_probs = tf.ones(num_points)*point_sample_prob
             point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
             points_to_sample = point_distribution.sample(self.max_num_samples)
             cloud1 = tf.gather(cloud1, points_to_sample)
@@ -39,7 +39,7 @@ class ChamferLossLayer(Layer):
         if tf.shape(cloud2)[-2]>self.max_num_samples:
             num_points = tf.shape(cloud2)[-2]
             point_sample_prob = num_points/self.max_num_samples
-            point_sample_probs = tf.ones()*point_sample_prob
+            point_sample_probs = tf.ones(num_points)*point_sample_prob
             point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
             points_to_sample = point_distribution.sample(self.max_num_samples)
             cloud1 = tf.gather(cloud2, points_to_sample)
