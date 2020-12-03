@@ -5,7 +5,7 @@ import tensorflow_probability as tfp
 
 
 class ChamferLossLayer(Layer):
-    def __init__(self, max_num_samples = 10000) -> None:
+    def __init__(self, max_num_samples=10000) -> None:
         super(ChamferLossLayer, self).__init__()
         self.max_num_samples = max_num_samples
 
@@ -28,21 +28,21 @@ class ChamferLossLayer(Layer):
         assert tf.is_tensor(cloud2)
         assert tf.shape(cloud2)[-1] == 3
 
-        if tf.shape(cloud1)[-2]>self.max_num_samples:
+        if tf.shape(cloud1)[-2] > self.max_num_samples:
             num_points = tf.shape(cloud1)[-2]
-            point_sample_prob = num_points/self.max_num_samples
-            point_sample_probs = tf.ones(num_points)*point_sample_prob
+            test = tf.ones(num_points)
+            point_sample_probs = test / tf.cast(num_points, dtype=tf.float32)
             point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
             points_to_sample = point_distribution.sample(self.max_num_samples)
             cloud1 = tf.gather(cloud1, points_to_sample)
 
-        if tf.shape(cloud2)[-2]>self.max_num_samples:
+        if tf.shape(cloud2)[-2] > self.max_num_samples:
             num_points = tf.shape(cloud2)[-2]
-            point_sample_prob = num_points/self.max_num_samples
-            point_sample_probs = tf.ones(num_points)*point_sample_prob
+            test = tf.ones(num_points)
+            point_sample_probs = test / tf.cast(num_points, dtype=tf.float32)
             point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
             points_to_sample = point_distribution.sample(self.max_num_samples)
-            cloud1 = tf.gather(cloud2, points_to_sample)
+            cloud2 = tf.gather(cloud2, points_to_sample)
 
         # Compute bidirectional, average loss using built in tfg function.
         # Returns the sum of (the mean, minimum, squared distance from cloud 1
