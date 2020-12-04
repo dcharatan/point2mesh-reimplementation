@@ -9,6 +9,8 @@ DEFAULTS = {
     "num_iterations": 1000,
     "initial_mesh": None,
     "save_location": "results",
+    "beamgap modulo": -1,  # if -1 then no beam gap loss
+    "obj save modulo": 5,
 }
 
 
