@@ -2,7 +2,7 @@ import json
 
 DEFAULTS = {
     # The point cloud that's fitted.
-    "point_cloud": "data/point_clouds/elephant.pwn",
+    "point_cloud": "data/point_clouds/hand.pwn",
     # The number of times remeshing/subdivision happens.
     "num_subdivisions": 3,
     # The number of iterations between each remeshing/subdivision.
