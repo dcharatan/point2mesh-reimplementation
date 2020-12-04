@@ -1,6 +1,7 @@
 import trimesh
 import numpy as np
 from typing import Tuple
+import os
 
 
 class Obj:
@@ -8,6 +9,7 @@ class Obj:
 
     @staticmethod
     def save(file_name: str, vertices: np.ndarray, faces: np.ndarray) -> None:
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
         with open(file_name, "w") as f:
             mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
             f.write(trimesh.exchange.obj.export_obj(mesh))
