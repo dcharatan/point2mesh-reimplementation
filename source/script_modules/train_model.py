@@ -30,8 +30,11 @@ with open(options["point_cloud"], "r") as f:
 point_cloud_tf = tf.convert_to_tensor(point_cloud_np, dtype=tf.float32)
 
 # Create the mesh.
-convex_hull = trimesh.convex.convex_hull(point_cloud_np)
-remeshed_vertices, remeshed_faces = remesh(convex_hull.vertices, convex_hull.faces)
+if options["initial_mesh"]:
+    remeshed_vertices, remeshed_faces = remesh(*Obj.load(options["initial_mesh"]))
+else:
+    convex_hull = trimesh.convex.convex_hull(point_cloud_np)
+    remeshed_vertices, remeshed_faces = remesh(convex_hull.vertices, convex_hull.faces)
 Obj.save("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 mesh = Mesh(remeshed_vertices, remeshed_faces)
 
@@ -62,10 +65,10 @@ for subdivision_level in range(num_subdivisions):
 
             # Calculate loss.
             surface_sample = mesh.sample_surface(new_vertices, 10000)
-            use_beamgap_loss = iteration % 3 == 0
+            use_beamgap_loss = iteration % 2 == 0
             if use_beamgap_loss:
                 beam_loss.update_points_masks(mesh, new_vertices, point_cloud_tf)
-                total_loss = beam_loss(mesh, new_vertices)
+                total_loss = 0.01 * beam_loss(mesh, new_vertices)
             else:
                 total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
 
