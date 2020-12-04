@@ -100,16 +100,14 @@ Now you can run the training script via:
 python3 -m source.script_modules.train_model
 ```
 
-It's about twice as fast as the RTX 2060S I have at home.
+### Retrieving OBJs from Google Cloud
 
-# Exporting OBJs from Google Compute
-
-mv resuts ~
+```
+mv results ~
 zip -r temp.zip results
-# Now download the file through the cog--> download file--> temp.zip
-rm temp.zip
-rm -r results
+```
 
+If using the browser-based SSH terminal, now click the cog (settings icon) and download `temp.zip`.
 
 ## Acknowledgements
 
