@@ -2,7 +2,7 @@ import json
 
 DEFAULTS = {
     # The point cloud that's fitted.
-    "point_cloud": "data/point_clouds/hand.pwn",
+    "point_cloud": "data/point_clouds/giraffe.pwn",
     # The number of times remeshing/subdivision happens.
     "num_subdivisions": 6,
     # The number of iterations between each remeshing/subdivision.
@@ -14,7 +14,7 @@ DEFAULTS = {
     # The initial number of faces used for optimization.
     "initial_num_faces": 1000,
     # An optional initial mesh.
-    "initial_mesh": None,
+    "initial_mesh": "data/objs/giraffe_initmesh.obj",
     # The folder where the results are saved.
     "save_location": "results",
     # how often to run beamgap loss if -1 then no beam gap loss

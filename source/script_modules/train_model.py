@@ -88,7 +88,7 @@ for subdivision_level in range(num_subdivisions):
 
             # Calculate loss.
             surface_sample = mesh.sample_surface(new_vertices, 10000)
-            beamgap_modulo = options["beamgap modulo"]
+            beamgap_modulo = options["beamgap_modulo"]
             if beamgap_modulo == -1:
                 use_beamgap_loss = False
             else:
@@ -104,7 +104,7 @@ for subdivision_level in range(num_subdivisions):
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
         # Save the obj every few iterations.
-        save_modulo = options["obj save modulo"]
+        save_modulo = options["obj_save_modulo"]
         if iteration % save_modulo == 0:
             save_mesh(
                 f"tmp_{str(subdivision_level).zfill(2)}_{str(iteration).zfill(3)}.obj",
