@@ -17,6 +17,8 @@ DEFAULTS = {
     "initial_mesh": None,
     # The folder where the results are saved.
     "save_location": "results",
+    "beamgap modulo": -1,  # if -1 then no beam gap loss
+    "obj save modulo": 5,
 }
 
 
