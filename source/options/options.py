@@ -4,10 +4,18 @@ DEFAULTS = {
     # The point cloud that's fitted.
     "point_cloud": "data/point_clouds/hand.pwn",
     # The number of times remeshing/subdivision happens.
-    "num_subdivisions": 3,
+    "num_subdivisions": 6,
     # The number of iterations between each remeshing/subdivision.
     "num_iterations": 1000,
+    # Each subdivision multiplies the number of faces by this.
+    "subdivision_multiplier": 1.5,
+    # The maximum number of faces that subdivision is allowed to yield.
+    "max_num_faces": 10000,
+    # The initial number of faces used for optimization.
+    "initial_num_faces": 1000,
+    # An optional initial mesh.
     "initial_mesh": None,
+    # The folder where the results are saved.
     "save_location": "results",
 }
 

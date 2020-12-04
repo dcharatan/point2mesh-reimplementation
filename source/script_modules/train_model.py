@@ -37,12 +37,13 @@ def save_mesh(file_name, vertices, faces):
 
 # Create the mesh.
 if options["initial_mesh"]:
-    remeshed_vertices, remeshed_faces = remesh(*Obj.load(options["initial_mesh"]))
+    remeshed_vertices, remeshed_faces = Obj.load(options["initial_mesh"])
 else:
     convex_hull = trimesh.convex.convex_hull(point_cloud_np)
-    remeshed_vertices, remeshed_faces = remesh(convex_hull.vertices, convex_hull.faces)
+    remeshed_vertices, remeshed_faces = remesh(
+        convex_hull.vertices, convex_hull.faces, options["initial_num_faces"]
+    )
 save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
-mesh = Mesh(remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
 model = PointToMeshModel()
@@ -50,16 +51,32 @@ chamfer_loss = ChamferLossLayer()
 beam_loss = BeamGapLossLayer(discrete_project)
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 num_subdivisions = options["num_subdivisions"]
+new_vertices = None
 for subdivision_level in range(num_subdivisions):
     # Subdivide the mesh if beyond the first level.
     if subdivision_level != 0:
-        raise Exception("Not yet implemented!")
+        if new_vertices is None:
+            raise Exception("Could not find vertices to subdivide.")
+        new_num_faces = min(
+            options["max_num_faces"],
+            options["subdivision_multiplier"] * remeshed_faces.shape[0],
+        )
+        print(
+            f"{Back.MAGENTA}Remeshing to {int(new_num_faces)} faces.{Style.RESET_ALL}"
+        )
+        remeshed_vertices, remeshed_faces = remesh(
+            new_vertices.numpy(), remeshed_faces, new_num_faces
+        )
     else:
-        old_vertices = tf.convert_to_tensor(remeshed_vertices, dtype=tf.float32)
+        print(
+            f"{Back.MAGENTA}Starting with {remeshed_faces.shape[0]} faces.{Style.RESET_ALL}"
+        )
+    mesh = Mesh(remeshed_vertices, remeshed_faces)
 
     # Create the random features.
     in_features = tf.random.uniform((mesh.edges.shape[0], 6), -0.5, 0.5)
 
+    old_vertices = tf.convert_to_tensor(remeshed_vertices, dtype=tf.float32)
     num_iterations = options["num_iterations"]
     for iteration in range(num_iterations):
         iteration_start_time = time.time()
@@ -85,7 +102,7 @@ for subdivision_level in range(num_subdivisions):
         # Save the obj every few iterations.
         if iteration % 5 == 0:
             save_mesh(
-                f"tmp_out_{str(iteration).zfill(3)}.obj",
+                f"tmp_{str(subdivision_level).zfill(2)}_{str(iteration).zfill(3)}.obj",
                 new_vertices.numpy(),
                 remeshed_faces,
             )
