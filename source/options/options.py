@@ -8,6 +8,7 @@ DEFAULTS = {
     # The number of iterations between each remeshing/subdivision.
     "num_iterations": 1000,
     "initial_mesh": None,
+    "save_location": "results",
 }
 
 

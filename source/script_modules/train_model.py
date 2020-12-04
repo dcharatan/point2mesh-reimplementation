@@ -5,6 +5,7 @@ import numpy as np
 from tensorflow.python.keras.backend import dtype
 import trimesh
 import colorama
+import os
 from colorama import Fore, Back, Style
 from ..mesh.Mesh import Mesh
 from ..mesh.Obj import Obj
@@ -29,13 +30,18 @@ with open(options["point_cloud"], "r") as f:
     point_cloud_np = np.loadtxt(f)[:, :3]
 point_cloud_tf = tf.convert_to_tensor(point_cloud_np, dtype=tf.float32)
 
+# Create a function for saving meshes.
+def save_mesh(file_name, vertices, faces):
+    Obj.save(os.path.join(options["save_location"], file_name), vertices, faces)
+
+
 # Create the mesh.
 if options["initial_mesh"]:
     remeshed_vertices, remeshed_faces = remesh(*Obj.load(options["initial_mesh"]))
 else:
     convex_hull = trimesh.convex.convex_hull(point_cloud_np)
     remeshed_vertices, remeshed_faces = remesh(convex_hull.vertices, convex_hull.faces)
-Obj.save("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
+save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 mesh = Mesh(remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
@@ -78,7 +84,7 @@ for subdivision_level in range(num_subdivisions):
 
         # Save the obj every few iterations.
         if iteration % 5 == 0:
-            Obj.save(
+            save_mesh(
                 f"tmp_out_{str(iteration).zfill(3)}.obj",
                 new_vertices.numpy(),
                 remeshed_faces,
