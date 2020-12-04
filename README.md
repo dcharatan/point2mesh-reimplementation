@@ -102,6 +102,15 @@ python3 -m source.script_modules.train_model
 
 It's about twice as fast as the RTX 2060S I have at home.
 
+# Exporting OBJs from Google Compute
+
+mv resuts ~
+zip -r temp.zip results
+# Now download the file through the cog--> download file--> temp.zip
+rm temp.zip
+rm -r results
+
+
 ## Acknowledgements
 
 The files `elephant.pwn`, `hand.pwn` and `sphere.pwn` were taken from Alex Jacobson's [mesh reconstruction project](https://github.com/alecjacobson/geometry-processing-mesh-reconstruction).
