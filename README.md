@@ -1,5 +1,17 @@
 # Point2Mesh Reimplementation
 
+This is a reimplementation of [Point2Mesh: A Self-Prior for Deformable Meshes](https://ranahanocka.github.io/point2mesh/) by Rana Hanocka, Gal Metzer, Raja Giryes and Daniel Cohen-Or. It was written by David Charatan, Solon James and Grace Deng as a final project for CSCI 1470: Deep Learning at Brown University. The authors' original implementation (in PyTorch) can be found [here](https://github.com/ranahanocka/Point2Mesh/).
+
+## Running the Code
+
+Several example point clouds can be found in the `data` folder. To fit to a point cloud, do the following:
+
+```
+python3 -m source.script_modules.train_model data/point_clouds/elephant_settings.json
+```
+
+Replace `elephant_settings.json` with a JSON settings file of your choice. For more information about valid JSON settings files, see `options.py`.
+
 ## Project Setup
 
 ### Creating a Virtual Environment
@@ -21,19 +33,18 @@ make
 
 ### Installing OpenEXR
 
+OpenEXR, a dependency of TensorFlow Graphics, cannot be installed directly via `pip`. Instead, follow the steps below:
+
 #### Windows
 
-Specifically there seems to be some sort of issues with some Windows machines installing OpenEXR (a critical component of tensorflow-graphics) through `pip3 install OpenEXR` or `pip3 install tensorflow-graphics`. Instead, the best option I found is downloading a precompiled wheel file from `https://www.lfd.uci.edu/~gohlke/pythonlibs/`, moving it to the workspace folder, then running `python -m pip install SomePackage-1.0-py2.py3-none-any.whl`. Then `pip3 install tensorflow-graphics` should work as you have already installed OpenEXR.
+Download a precompiled wheel file from `https://www.lfd.uci.edu/~gohlke/pythonlibs/`, move it to the workspace folder, then run `python -m pip install SomePackage-1.0-py2.py3-none-any.whl`. Running `pip3 install tensorflow-graphics` should then work.
 
 #### MacOS
-
-Do the following:
 
 ```
 brew install openexr
 export CFLAGS="-I/Users/USERNAME/homebrew/include/OpenEXR -std=c++11"
 export LDFLAGS="-L/Users/USERNAME/homebrew/lib"
-pip3 install openexr
 pip3 install tensorflow-graphics
 ```
 
@@ -43,7 +54,6 @@ pip3 install tensorflow-graphics
 sudo apt-get install python3-dev
 sudo apt-get install libopenexr-dev
 sudo apt-get install openexr
-pip3 install openexr
 pip3 install tensorflow-graphics
 ```
 
