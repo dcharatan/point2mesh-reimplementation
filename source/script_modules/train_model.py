@@ -46,13 +46,17 @@ else:
 save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
-model = PointToMeshModel()
 chamfer_loss = ChamferLossLayer()
 beam_loss = BeamGapLossLayer(discrete_project)
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 num_subdivisions = options["num_subdivisions"]
 new_vertices = None
 for subdivision_level in range(num_subdivisions):
+    # Create a new model at each subdivision level.
+    # This is because the learned weights don't probably don't carry over to
+    # different initial positions and resolutions.
+    model = PointToMeshModel()
+
     # Subdivide the mesh if beyond the first level.
     if subdivision_level != 0:
         if new_vertices is None:
