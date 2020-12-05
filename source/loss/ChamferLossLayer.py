@@ -5,10 +5,13 @@ import tensorflow_probability as tfp
 
 
 class ChamferLossLayer(Layer):
-    def __init__(self, min_num_samples=10000, max_num_samples=16000) -> None:
+    def __init__(
+        self, min_num_samples=10000, max_num_samples=16000, num_iterations=1000
+    ) -> None:
         super(ChamferLossLayer, self).__init__()
         self.max_num_samples = max_num_samples
         self.min_num_samples = min_num_samples
+        self.num_iterations = num_iterations
 
     def call(self, cloud1, cloud2, iteration):
         """
@@ -31,7 +34,8 @@ class ChamferLossLayer(Layer):
 
         num_samples = int(
             self.min_num_samples
-            + (iteration / 1000) * (self.max_num_samples - self.min_num_samples)
+            + (iteration / self.num_iterations)
+            * (self.max_num_samples - self.min_num_samples)
         )
 
         if tf.shape(cloud1)[-2] > num_samples:

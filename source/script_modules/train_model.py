@@ -47,7 +47,11 @@ else:
 save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
-chamfer_loss = ChamferLossLayer()
+chamfer_loss = ChamferLossLayer(
+    options["min_sample_points"],
+    options["max_sample_points"],
+    options["num_iterations"],
+)
 chamfer_convergence = ConvergenceDetector()
 beam_loss = BeamGapLossLayer(discrete_project)
 beam_convergence = ConvergenceDetector()
@@ -95,7 +99,12 @@ for subdivision_level in range(num_subdivisions):
             new_vertices = old_vertices + get_vertex_features(mesh, features)
 
             # Calculate loss.
-            surface_sample = mesh.sample_surface(new_vertices, 10000)
+            num_samples = int(
+                options["min_num_samples"]
+                + (iteration / options["num_iterations"])
+                * (options["max_num_samples"] - options["min_num_samples"])
+            )
+            surface_sample = mesh.sample_surface(new_vertices, num_samples)
             beamgap_modulo = options["beamgap_modulo"]
             if beamgap_modulo == -1:
                 use_beamgap_loss = False

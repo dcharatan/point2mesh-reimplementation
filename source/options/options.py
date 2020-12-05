@@ -21,6 +21,9 @@ DEFAULTS = {
     "beamgap_modulo": -1,
     # how often to save objs
     "obj_save_modulo": 5,
+    # range to lineralyinterp between when computing samples
+    "min_sample_points": 10000,
+    "max_sample_points": 16000,
 }
 
 
