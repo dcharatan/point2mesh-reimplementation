@@ -29,11 +29,25 @@
             ]
         },
         {
+            "name": "Export PWN",
+            "type": "python",
+            "request": "launch",
+            "module": "source.script_modules.get_pwn_from_obj.py",
+            "args": [
+                "--input",
+                "data/objs/cylinder.obj",
+                "--output",
+                "tmp_remeshed_convex_hull.pwn"
+            ]
+        },
+        {
             "name": "Train Model",
             "type": "python",
             "request": "launch",
             "module": "source.script_modules.train_model",
-            "args": ["data/point_clouds/elephant_settings.json"]
+            "args": [
+                "data/point_clouds/elephant_settings.json"
+            ]
         }
     ]
 }
