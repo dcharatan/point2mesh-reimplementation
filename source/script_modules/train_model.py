@@ -52,9 +52,7 @@ chamfer_loss = ChamferLossLayer(
     options["max_num_samples"],
     options["num_iterations"],
 )
-chamfer_convergence = ConvergenceDetector()
 beam_loss = BeamGapLossLayer(discrete_project)
-beam_convergence = ConvergenceDetector()
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 num_subdivisions = options["num_subdivisions"]
 new_vertices = None
@@ -63,6 +61,8 @@ for subdivision_level in range(num_subdivisions):
     # This is because the learned weights don't probably don't carry over to
     # different initial positions and resolutions.
     model = PointToMeshModel()
+    chamfer_convergence = ConvergenceDetector()
+    beam_convergence = ConvergenceDetector()
 
     # Subdivide the mesh if beyond the first level.
     if subdivision_level != 0:
