@@ -101,7 +101,7 @@ for subdivision_level in range(num_subdivisions):
                 beam_loss.update_points_masks(mesh, new_vertices, point_cloud_tf)
                 total_loss = 0.01 * beam_loss(mesh, new_vertices)
             else:
-                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
+                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf, iteration)
 
         # Apply gradients.
         gradients = tape.gradient(total_loss, model.trainable_variables)
