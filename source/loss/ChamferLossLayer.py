@@ -5,7 +5,7 @@ import tensorflow_probability as tfp
 
 
 class ChamferLossLayer(Layer):
-    def __init__(self, max_num_samples=20000) -> None:
+    def __init__(self, max_num_samples=16000) -> None:
         super(ChamferLossLayer, self).__init__()
         self.max_num_samples = max_num_samples
 
