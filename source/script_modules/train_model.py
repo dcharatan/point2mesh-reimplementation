@@ -13,6 +13,7 @@ from ..model.PointToMeshModel import PointToMeshModel
 from ..model.get_vertex_features import get_vertex_features
 from ..loss.ChamferLossLayer import ChamferLossLayer
 from ..loss.loss import BeamGapLossLayer, discrete_project
+from ..loss.ConvergenceDetector import ConvergenceDetector
 from ..mesh.remesh import remesh
 from ..options.options import load_options
 
@@ -47,7 +48,9 @@ save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
 chamfer_loss = ChamferLossLayer()
+chamfer_convergence = ConvergenceDetector()
 beam_loss = BeamGapLossLayer(discrete_project)
+beam_convergence = ConvergenceDetector()
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 num_subdivisions = options["num_subdivisions"]
 new_vertices = None
@@ -91,7 +94,7 @@ for subdivision_level in range(num_subdivisions):
             new_vertices = old_vertices + get_vertex_features(mesh, features)
 
             # Calculate loss.
-            surface_sample = mesh.sample_surface(new_vertices, 16000)
+            surface_sample = mesh.sample_surface(new_vertices, 10000)
             beamgap_modulo = options["beamgap_modulo"]
             if beamgap_modulo == -1:
                 use_beamgap_loss = False
@@ -100,8 +103,22 @@ for subdivision_level in range(num_subdivisions):
             if use_beamgap_loss:
                 beam_loss.update_points_masks(mesh, new_vertices, point_cloud_tf)
                 total_loss = 0.01 * beam_loss(mesh, new_vertices)
+
+                # If beam-gap loss has converged, skip the remaining iterations.
+                if beam_convergence.step(total_loss.numpy().item()):
+                    print(
+                        f"{Back.MAGENTA}Beam gap loss converged at iteration {iteration + 1}/{num_iterations}.{Style.RESET_ALL}"
+                    )
+                    break
             else:
                 total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
+
+                # If chamfer loss has converged, skip the remaining iterations.
+                if chamfer_convergence.step(total_loss.numpy().item()):
+                    print(
+                        f"{Back.MAGENTA}Chamfer gap loss converged at iteration {iteration + 1}/{num_iterations}.{Style.RESET_ALL}"
+                    )
+                    break
 
         # Apply gradients.
         gradients = tape.gradient(total_loss, model.trainable_variables)
