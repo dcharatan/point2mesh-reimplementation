@@ -91,7 +91,7 @@ for subdivision_level in range(num_subdivisions):
             new_vertices = old_vertices + get_vertex_features(mesh, features)
 
             # Calculate loss.
-            surface_sample = mesh.sample_surface(new_vertices, 10000)
+            surface_sample = mesh.sample_surface(new_vertices, 15000)
             beamgap_modulo = options["beamgap_modulo"]
             if beamgap_modulo == -1:
                 use_beamgap_loss = False
