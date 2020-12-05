@@ -88,6 +88,7 @@ for subdivision_level in range(num_subdivisions):
     for iteration in range(num_iterations):
         iteration_start_time = time.time()
 
+        converged = False
         with tf.GradientTape() as tape:
             # Get new vertex positions by calling the model.
             features = model(mesh, in_features)
@@ -103,22 +104,10 @@ for subdivision_level in range(num_subdivisions):
             if use_beamgap_loss:
                 beam_loss.update_points_masks(mesh, new_vertices, point_cloud_tf)
                 total_loss = 0.01 * beam_loss(mesh, new_vertices)
-
-                # If beam-gap loss has converged, skip the remaining iterations.
-                if beam_convergence.step(total_loss.numpy().item()):
-                    print(
-                        f"{Back.MAGENTA}Beam gap loss converged at iteration {iteration + 1}/{num_iterations}.{Style.RESET_ALL}"
-                    )
-                    break
+                converged = beam_convergence.step(total_loss.numpy().item())
             else:
                 total_loss = chamfer_loss(surface_sample[0], point_cloud_tf, iteration)
-
-                # If chamfer loss has converged, skip the remaining iterations.
-                if chamfer_convergence.step(total_loss.numpy().item()):
-                    print(
-                        f"{Back.MAGENTA}Chamfer gap loss converged at iteration {iteration + 1}/{num_iterations}.{Style.RESET_ALL}"
-                    )
-                    break
+                converged = chamfer_convergence.step(total_loss.numpy().item())
 
         # Apply gradients.
         gradients = tape.gradient(total_loss, model.trainable_variables)
@@ -126,7 +115,7 @@ for subdivision_level in range(num_subdivisions):
 
         # Save the obj every few iterations.
         save_modulo = options["obj_save_modulo"]
-        if iteration % save_modulo == 0:
+        if iteration % save_modulo == 0 or converged or iteration == num_iterations - 1:
             save_mesh(
                 f"tmp_{str(subdivision_level).zfill(2)}_{str(iteration).zfill(3)}.obj",
                 new_vertices.numpy(),
@@ -143,5 +132,9 @@ for subdivision_level in range(num_subdivisions):
             f"Time: {time.time() - iteration_start_time}",
         ]
         print(" ".join(message))
+        if converged:
+            print(
+                f"{Back.MAGENTA}Converged at iteration {iteration + 1}/{num_iterations}.{Style.RESET_ALL}"
+            )
 
 print("Done.")
