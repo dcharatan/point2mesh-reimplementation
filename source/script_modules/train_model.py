@@ -136,5 +136,6 @@ for subdivision_level in range(num_subdivisions):
             print(
                 f"{Back.MAGENTA}Converged at iteration {iteration + 1}/{num_iterations}.{Style.RESET_ALL}"
             )
+            break
 
 print("Done.")
