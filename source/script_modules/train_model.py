@@ -48,9 +48,7 @@ save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
 chamfer_loss = ChamferLossLayer()
-chamfer_convergence = ConvergenceDetector()
 beam_loss = BeamGapLossLayer(discrete_project)
-beam_convergence = ConvergenceDetector()
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 num_subdivisions = options["num_subdivisions"]
 new_vertices = None
@@ -59,6 +57,8 @@ for subdivision_level in range(num_subdivisions):
     # This is because the learned weights don't probably don't carry over to
     # different initial positions and resolutions.
     model = PointToMeshModel()
+    chamfer_convergence = ConvergenceDetector()
+    beam_convergence = ConvergenceDetector()
 
     # Subdivide the mesh if beyond the first level.
     if subdivision_level != 0:
@@ -95,7 +95,12 @@ for subdivision_level in range(num_subdivisions):
             new_vertices = old_vertices + get_vertex_features(mesh, features)
 
             # Calculate loss.
-            surface_sample = mesh.sample_surface(new_vertices, 10000)
+            num_samples = int(
+                options["min_num_samples"]
+                + (iteration / options["num_iterations"])
+                * (options["max_num_samples"] - options["min_num_samples"])
+            )
+            surface_sample = mesh.sample_surface(new_vertices, num_samples)
             beamgap_modulo = options["beamgap_modulo"]
             if beamgap_modulo == -1:
                 use_beamgap_loss = False
@@ -106,7 +111,9 @@ for subdivision_level in range(num_subdivisions):
                 total_loss = 0.01 * beam_loss(mesh, new_vertices)
                 converged = beam_convergence.step(total_loss.numpy().item())
             else:
-                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf, iteration)
+                total_loss = chamfer_loss(
+                    surface_sample[0], point_cloud_tf, num_samples
+                )
                 converged = chamfer_convergence.step(total_loss.numpy().item())
 
         # Apply gradients.

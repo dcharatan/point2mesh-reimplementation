@@ -5,12 +5,10 @@ import tensorflow_probability as tfp
 
 
 class ChamferLossLayer(Layer):
-    def __init__(self, min_num_samples=10000, max_num_samples=16000) -> None:
+    def __init__(self) -> None:
         super(ChamferLossLayer, self).__init__()
-        self.max_num_samples = max_num_samples
-        self.min_num_samples = min_num_samples
 
-    def call(self, cloud1, cloud2, iteration):
+    def call(self, cloud1, cloud2, num_samples):
         """
         Arguments:
         cloud1 is a tf tensor of shape (N,P1,D) where:
@@ -29,29 +27,23 @@ class ChamferLossLayer(Layer):
         assert tf.is_tensor(cloud2)
         assert tf.shape(cloud2)[-1] == 3
 
-        num_samples = int(
-            self.min_num_samples
-            + (iteration / 1000) * (self.max_num_samples - self.min_num_samples)
-        )
-
-        if tf.shape(cloud1)[-2] > num_samples:
-            num_points = tf.shape(cloud1)[-2]
-            test = tf.ones(num_points)
-            point_sample_probs = test / tf.cast(num_points, dtype=tf.float32)
+        def subsample(cloud):
+            num_points = tf.shape(cloud)[-2]
+            point_sample_probs = tf.ones(num_points) / tf.cast(
+                num_points, dtype=tf.float32
+            )
             point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
             points_to_sample = point_distribution.sample(num_samples)
-            cloud1 = tf.gather(cloud1, points_to_sample)
+            return tf.gather(cloud, points_to_sample)
 
-        if tf.shape(cloud2)[-2] > num_samples:
-            num_points = tf.shape(cloud2)[-2]
-            test = tf.ones(num_points)
-            point_sample_probs = test / tf.cast(num_points, dtype=tf.float32)
-            point_distribution = tfp.distributions.Categorical(probs=point_sample_probs)
-            points_to_sample = point_distribution.sample(num_samples)
-            cloud2 = tf.gather(cloud2, points_to_sample)
+        subsampled_cloud1 = subsample(cloud1)
+        subsampled_cloud2 = subsample(cloud2)
+
+        print(subsampled_cloud1.shape[0])
+        print(subsampled_cloud2.shape[0])
 
         # Compute bidirectional, average loss using built in tfg function.
         # Returns the sum of (the mean, minimum, squared distance from cloud 1
         # to 2) and vice-versa (the mean, minimum, squared distance from cloud 2
         # to 1).
-        return chamfer_distance.evaluate(cloud1, cloud2)
+        return chamfer_distance.evaluate(subsampled_cloud1, subsampled_cloud2)
