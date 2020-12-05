@@ -29,8 +29,9 @@ class ChamferLossLayer(Layer):
         assert tf.is_tensor(cloud2)
         assert tf.shape(cloud2)[-1] == 3
 
-        num_samples = self.min_num_samples + (iteration / 1000) * (
-            self.max_num_samples - self.min_num_samples
+        num_samples = int(
+            self.min_num_samples
+            + (iteration / 1000) * (self.max_num_samples - self.min_num_samples)
         )
 
         if tf.shape(cloud1)[-2] > num_samples:
