@@ -39,9 +39,6 @@ class ChamferLossLayer(Layer):
         subsampled_cloud1 = subsample(cloud1)
         subsampled_cloud2 = subsample(cloud2)
 
-        print(subsampled_cloud1.shape[0])
-        print(subsampled_cloud2.shape[0])
-
         # Compute bidirectional, average loss using built in tfg function.
         # Returns the sum of (the mean, minimum, squared distance from cloud 1
         # to 2) and vice-versa (the mean, minimum, squared distance from cloud 2
