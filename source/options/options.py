@@ -25,11 +25,14 @@ DEFAULTS = {
 
 
 def load_options(argv: list):
-    try:
-        with open(argv[1], "r") as f:
-            options = json.load(f)
-    except:
+    if len(argv) == 1:
         return DEFAULTS
+    if len(argv) != 2:
+        raise Exception(
+            "The only (optional) argument should be the settings JSON file."
+        )
+    with open(argv[1], "r") as f:
+        options = json.load(f)
 
     for key in options:
         if key not in DEFAULTS:
