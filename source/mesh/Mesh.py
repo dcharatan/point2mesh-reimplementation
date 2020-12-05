@@ -163,8 +163,17 @@ class Mesh:
         self.vertex_to_degree = []
         for ecs in self.vertex_to_edges:
             vertex_info = [(ec.edge_index, ec.index_in_edge) for ec in ecs]
+
+            # For vertices whose degree is less than the maximum vertex degree
+            # in the mesh, we specify (num_edges, 0) as the index of the edge.
+            # This is because the edge features are assumed to be padded with
+            # an extra zero feature at the end that can be indexed this way.
+            # This is necessary for the CPU implementation to work because
+            # tf.gather_nd will give an error when an invalid index is given on
+            # CPU (instead of just returning a zero feature like on GPU).
+            num_e = self.edges.shape[0]
             vertex_info.extend(
-                [(-1, -1) for _ in range(self.max_vertex_degree - len(ecs))]
+                [(num_e, 0) for _ in range(self.max_vertex_degree - len(ecs))]
             )
             self.vertex_to_edges_tensor.extend(vertex_info)
             self.vertex_to_degree.append(len(ecs))
