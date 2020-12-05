@@ -8,6 +8,7 @@ certifi==2020.11.8
 chardet==3.0.4
 click==7.1.2
 cloudpickle==1.6.0
+colorama==0.4.4
 cycler==0.10.0
 decorator==4.4.2
 dill==0.3.3
@@ -19,6 +20,7 @@ google-auth-oauthlib==0.4.2
 google-pasta==0.2.0
 googleapis-common-protos==1.52.0
 grpcio==1.33.2
+gviz-api==1.9.0
 h5py==2.10.0
 idna==2.10
 importlib-resources==3.3.0
@@ -48,6 +50,7 @@ rsa==4.6
 scipy==1.5.4
 six==1.15.0
 tensorboard==2.4.0
+tensorboard-plugin-profile==2.3.0
 tensorboard-plugin-wit==1.7.0
 tensorflow==2.3.1
 tensorflow-datasets==4.1.0
