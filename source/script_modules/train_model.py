@@ -47,11 +47,7 @@ else:
 save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
-chamfer_loss = ChamferLossLayer(
-    options["min_num_samples"],
-    options["max_num_samples"],
-    options["num_iterations"],
-)
+chamfer_loss = ChamferLossLayer()
 beam_loss = BeamGapLossLayer(discrete_project)
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00005)
 num_subdivisions = options["num_subdivisions"]
@@ -115,7 +111,9 @@ for subdivision_level in range(num_subdivisions):
                 total_loss = 0.01 * beam_loss(mesh, new_vertices)
                 converged = beam_convergence.step(total_loss.numpy().item())
             else:
-                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf, iteration)
+                total_loss = chamfer_loss(
+                    surface_sample[0], point_cloud_tf, num_samples
+                )
                 converged = chamfer_convergence.step(total_loss.numpy().item())
 
         # Apply gradients.
