@@ -1,5 +1,7 @@
 # Point2Mesh Reimplementation
 
+![](data/gifs/triceratops_gif_small.gif)
+
 This is a reimplementation of [Point2Mesh: A Self-Prior for Deformable Meshes](https://ranahanocka.github.io/point2mesh/) by Rana Hanocka, Gal Metzer, Raja Giryes and Daniel Cohen-Or. It was written by David Charatan, Solon James and Grace Deng as a final project for CSCI 1470: Deep Learning at Brown University. The authors' original implementation (in PyTorch) can be found [here](https://github.com/ranahanocka/Point2Mesh/).
 
 ## Running the Code
