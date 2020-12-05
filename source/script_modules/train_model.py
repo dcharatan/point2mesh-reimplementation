@@ -111,7 +111,7 @@ for subdivision_level in range(num_subdivisions):
                     )
                     break
             else:
-                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf)
+                total_loss = chamfer_loss(surface_sample[0], point_cloud_tf, iteration)
 
                 # If chamfer loss has converged, skip the remaining iterations.
                 if chamfer_convergence.step(total_loss.numpy().item()):
