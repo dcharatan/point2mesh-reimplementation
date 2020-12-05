@@ -48,8 +48,8 @@ save_mesh("tmp_initial_mesh.obj", remeshed_vertices, remeshed_faces)
 
 # Create and train the model.
 chamfer_loss = ChamferLossLayer(
-    options["min_sample_points"],
-    options["max_sample_points"],
+    options["min_num_samples"],
+    options["max_num_samples"],
     options["num_iterations"],
 )
 chamfer_convergence = ConvergenceDetector()
