@@ -8,10 +8,10 @@ import tensorflow as tf
 
 
 class PointToMeshModel(Model):
-    def __init__(self, initial_num_faces: int, pooling: List[float]) -> None:
+    def __init__(self, initial_num_edges: int, pooling: List[float]) -> None:
         super(PointToMeshModel, self).__init__()
         assert len(pooling) == 6
-        scaled_pooling = [None if p is None else initial_num_faces * p for p in pooling]
+        scaled_pooling = [None if p is None else initial_num_edges * p for p in pooling]
         self.encoder = Encoder((6, 16, 32, 64, 64, 128), 1, 3, 0.01, scaled_pooling)
         self.decoder = Decoder((64, 64, 32, 16, 6, 6), 1, 1, 0.01, scaled_pooling)
         self.batch_normalization = tf.keras.layers.BatchNormalization()

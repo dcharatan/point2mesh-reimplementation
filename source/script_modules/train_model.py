@@ -78,7 +78,7 @@ for subdivision_level in range(num_subdivisions):
             f"{Back.MAGENTA}Starting with {remeshed_faces.shape[0]} faces.{Style.RESET_ALL}"
         )
     mesh = Mesh(remeshed_vertices, remeshed_faces)
-    model = PointToMeshModel(remeshed_faces.shape[0], options["pooling"])
+    model = PointToMeshModel(mesh.edges.shape[0], options["pooling"])
 
     # Create the random features.
     in_features = tf.random.uniform((mesh.edges.shape[0], 6), -0.5, 0.5)
