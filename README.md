@@ -2,7 +2,7 @@
 
 ![](data/gifs/triceratops_gif_small.gif)
 
-This is a reimplementation of [Point2Mesh: A Self-Prior for Deformable Meshes](https://ranahanocka.github.io/point2mesh/) by Rana Hanocka, Gal Metzer, Raja Giryes and Daniel Cohen-Or. It was written by David Charatan, Solon James and Grace Deng as a final project for CSCI 1470: Deep Learning at Brown University. The authors' original implementation (in PyTorch) can be found [here](https://github.com/ranahanocka/Point2Mesh/).
+This is a reimplementation of [Point2Mesh: A Self-Prior for Deformable Meshes](https://ranahanocka.github.io/point2mesh/) by Rana Hanocka, Gal Metzer, Raja Giryes and Daniel Cohen-Or. It was written by David Charatan, Solon James and Grace Deng as a final project for CSCI 1470: Deep Learning at Brown University. The authors' original implementation (in PyTorch) can be found [here](https://github.com/ranahanocka/Point2Mesh/). Watch a short video we made about the project [here](https://youtu.be/k34zExyJHvo).
 
 ## Running the Code
 
