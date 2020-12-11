@@ -24,6 +24,7 @@ DEFAULTS = {
     # range to lineralyinterp between when computing samples
     "min_num_samples": 10000,
     "max_num_samples": 16000,
+    "pooling": [None, None, None, None, None, None],
 }
 
 
