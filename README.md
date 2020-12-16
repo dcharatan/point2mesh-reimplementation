@@ -14,6 +14,10 @@ python3 -m source.script_modules.train_model data/point_clouds/elephant_settings
 
 Replace `elephant_settings.json` with a JSON settings file of your choice. For more information about valid JSON settings files, see `options.py`.
 
+## Notes About this Implementation
+
+This implementation runs slower than the original implementation and doesn't include the PartMesh structure (splitting meshes into parts so that larger meshes can be optimized). However, we tried to add lots of comments to the code to make this implementation easier to follow than the original.
+
 ## Project Setup
 
 ### Creating a Virtual Environment
